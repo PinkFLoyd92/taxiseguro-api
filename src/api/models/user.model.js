@@ -1,11 +1,11 @@
 const mongoose = require('mongoose');
 const httpStatus = require('http-status');
 const { omitBy, isNil } = require('lodash');
-const bcrypt = require('bcryptjs');
-const moment = require('moment-timezone');
-const uuidv4 = require('uuid/v4');
+// const bcrypt = require('bcryptjs');
+// const moment = require('moment-timezone');
+// const uuidv4 = require('uuid/v4');
 const APIError = require('../utils/APIError');
-const { env } = require('../../config/vars');
+// const { env } = require('../../config/vars');
 
 /**
 * User Roles
@@ -110,6 +110,7 @@ userSchema.statics = {
       .limit(perPage)
       .exec();
   },
+};
 
 /**
  * @typedef User
