@@ -16,8 +16,13 @@ const possibleStatus = ['inactive', 'active', 'cancelled', 'finished'];
 const routeSchema = new mongoose.Schema({
   driver: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   client: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-  start: { type: Date },
-  points: mongoose.Schema.Types.LineString,
+  date: {
+    type: Date,
+    default: Date.now,
+  },
+  points: mongoose.Schema.Types.MultiPoint,
+  start: mongoose.Schema.Types.Point,
+  end: mongoose.Schema.Types.Point,
   status: {
     type: String,
     enum: possibleStatus,

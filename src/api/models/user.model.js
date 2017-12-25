@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const GeoJSON = require('mongoose-geojson-schema');
 const httpStatus = require('http-status');
 const { omitBy, isNil } = require('lodash');
 // const bcrypt = require('bcryptjs');
@@ -38,6 +39,7 @@ const userSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
+  location: mongoose.Schema.Types.Point,
 }, {
   timestamps: true,
 });
