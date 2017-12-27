@@ -43,8 +43,7 @@ fenceSchema.statics = {
       });
     } catch (error) {
       throw error;
-    }
-  },
+    }},
 
   /**
    * List fences in descending order of 'createdAt' timestamp.
