@@ -18,9 +18,37 @@ mongoose.connect();
 // listen to requests
 app.listen(port, () => console.info(`server started on port ${port} (${env})`));
 
+const socketClients = new Map();
+// const checkUsersInRoom = (roomId) => {
+//   io.in(roomId).clients((error, clients) => {
+//     if (error) throw error;
+//     console.info(clients); // => [Anw2LatarvGVVXEIAAAD]
+//   });
+// };
+
 io.set('origins', '*:*');
 io.on('connection', (socket) => {
   console.log('new connection', socket);
+
+  socket.on('create', (room) => {
+    socket.join(room);
+  });
+
+  socket.on('sendInfo', (data) => {
+    const userInfo = {};
+    userInfo._id = data._id;
+    userInfo.socketId = socket.id;
+    socketClients.set(socket.id, userInfo);
+  });
+
+  socket.on('disconnect', () => {
+    try {
+      socketClients.delete(socket.id);
+      console.info('Removing socket...');
+    } catch (e) {
+      console.error('Something wrong happened, ', e);
+    }
+  });
 });
 /**
 * Exports express
