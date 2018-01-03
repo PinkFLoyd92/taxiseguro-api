@@ -9,6 +9,7 @@ const server = http.createServer(app);
 const io = require('socket.io').listen(server);
 
 server.listen(9000);
+console.info('Socket Server listening in port 9000');
 app.io = io;
 
 // open mongoose connection

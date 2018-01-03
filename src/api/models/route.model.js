@@ -73,9 +73,9 @@ routeSchema.statics = {
    * @returns {Promise<Route[]>}
    */
   list({
-    page = 1, perPage = 30, name, status,
+    page = 1, perPage = 30, driver, client,
   }) {
-    const options = omitBy({ name, status }, isNil);
+    const options = omitBy({ driver, client }, isNil);
 
     return this.find(options)
       .sort({ createdAt: -1 })

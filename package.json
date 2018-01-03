@@ -63,6 +63,9 @@
     "starter project"
   ],
   "dependencies": {
+    "@turf/boolean-point-in-polygon": "^5.1.5",
+    "@turf/buffer": "^5.1.5",
+    "@turf/helpers": "^5.1.5",
     "axios": "^0.16.2",
     "bcryptjs": "2.4.3",
     "bluebird": "^3.5.0",
@@ -93,7 +96,7 @@
   },
   "devDependencies": {
     "apidoc": "^0.17.5",
-    "chai": "^4.1.0",
+    "chai": "^4.1.2",
     "chai-as-promised": "^7.1.1",
     "coveralls": "^3.0.0",
     "eslint": "^4.2.0",

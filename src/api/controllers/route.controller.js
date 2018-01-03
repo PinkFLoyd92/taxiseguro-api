@@ -62,3 +62,14 @@ exports.remove = (req, res, next) => {
     .then(() => res.status(httpStatus.NO_CONTENT).end())
     .catch(e => next(e));
 };
+
+
+exports.checkRoute = (req, res, next) => {
+  if(!req.query._id) {
+
+  }
+
+  route.remove()
+    .then(() => res.status(httpStatus.NO_CONTENT).end())
+    .catch(e => next(e));
+};

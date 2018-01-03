@@ -1,6 +1,6 @@
 const express = require('express');
 // const validate = require('express-validation');
-const controller = require('../../controllers/route.controller');
+const controller = require('../../controllers/fence.controller');
 // const {
 //   listRoutes,
 //   createRoute,
@@ -11,9 +11,9 @@ const controller = require('../../controllers/route.controller');
 const router = express.Router();
 
 /**
- * Load route when API with routeId route parameter is hit
+ * Load fence when API with routeId route parameter is hit
  */
-router.param('routeId', controller.load);
+router.param('fenceId', controller.load);
 
 
 router
@@ -23,13 +23,9 @@ router
 
 
 router
-  .route('/:routeId')
+  .route('/:fenceId')
   .get(controller.get)
   .delete(controller.remove);
-
-router
-  .route('/checkRoute/:routeId')
-  .get(controller.checkRoute);
 
 
 module.exports = router;

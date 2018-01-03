@@ -1,9 +1,16 @@
-Promise = require('bluebird'); // eslint-disable-line no-global-assign
+const multiPoint = require('@turf/helpers').multiPoint;
+const lineString = require('@turf/helpers').lineString;
+const isPointInPolygon = require('@turf/boolean-point-in-polygon');
+const buffer = require('@turf/buffer');
+
+Promise = require('bluebird');
+// eslint-disable-line no-global-assign
 
 const seeder = require('mongoose-seed');
 const { mongo } = require('./vars');
 const User = require('../api/models/user.model');
 const Route = require('../api/models/route.model');
+const Fence = require('../api/models/fence.model');
 
 function seedRoute(driverName, clientName, info = {}) {
   return new Promise((resolve) => {
@@ -12,7 +19,17 @@ function seedRoute(driverName, clientName, info = {}) {
         User.findOne({ name: clientName }).exec()
           .then((user2) => {
             // console.info(user2);
-            Route.create({ driver: user1._id, client: user2._id, points: info.geoInfo.points, start:info.geoInfo.start, end: info.geoInfo.end}).then((route) => {
+            Route.create({
+              driver: user1._id, client: user2._id, points: info.geoInfo.points, start: info.geoInfo.start, end: info.geoInfo.end,
+            }).then((route) => {
+              try {
+                const linestring1 = lineString(info.geoInfo.points.coordinates);
+                const buffered = buffer(linestring1, 10, { units: 'kilometers' });
+                // console.info(buffered)
+                console.info(isPointInPolygon(info.geoInfo.start, buffered.geometry));
+              } catch (e) {
+                console.error(e);
+              }
               resolve(route);
             }, (error) => {
               console.error(error);
@@ -26,7 +43,8 @@ function seedRoute(driverName, clientName, info = {}) {
   });
 }
 
-async function populateAll(seeder) {
+
+async function populateAll() {
   await Promise.all([seedRoute('Usuario 1', 'Usuario 2', {
     geoInfo: {
       start: {
@@ -79,27 +97,27 @@ const data = [
         password: '123456',
         role: 'driver',
         location: {
-          type: "Point",
-          coordinates: [-2.14403,-79.96104]
-        }
+          type: 'Point',
+          coordinates: [-2.14403, -79.96104],
+        },
       },
       {
         name: 'Usuario 2',
         password: '123456',
         role: 'client',
         location: {
-          type: "Point",
-          coordinates: [-2.14403,-79.96104]
-        }
+          type: 'Point',
+          coordinates: [-2.14403, -79.96104],
+        },
       },
       {
         name: 'Usuario 3',
         password: '123456',
         role: 'monitor',
         location: {
-          type: "Point",
-          coordinates: [-2.14403,-79.96104]
-        }
+          type: 'Point',
+          coordinates: [-2.14403, -79.96104],
+        },
       },
     ],
   },

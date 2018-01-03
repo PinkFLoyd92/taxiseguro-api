@@ -1,16 +1,16 @@
 const httpStatus = require('http-status');
 const { omit } = require('lodash');
-const User = require('../models/fence.model');
+const Fence = require('../models/fence.model');
 const { handler: errorHandler } = require('../middlewares/error');
 
 /**
- * Load user and append to req.
+ * Load fence and append to req.
  * @public
  */
 exports.load = async (req, res, next, id) => {
   try {
-    const user = await User.get(id);
-    req.locals = { user };
+    const fence = await Fence.get(id);
+    req.locals = { fence };
     return next();
   } catch (error) {
     return errorHandler(error, req, res);
@@ -18,88 +18,60 @@ exports.load = async (req, res, next, id) => {
 };
 
 /**
- * Get user
+ * Get fence
  * @public
  */
-exports.get = (req, res) => res.json(req.locals.user.transform());
+exports.get = (req, res) => res.json(req.locals.fence.transform());
 
 /**
- * Get logged in user info
- * @public
- */
-exports.loggedIn = (req, res) => res.json(req.user.transform());
-
-/**
- * Create new user
+ * Create new fence
  * @public
  */
 exports.create = async (req, res, next) => {
   try {
-    const user = new User(req.body);
-    const savedUser = await user.save();
+    const fence = new Fence(req.body);
+    const savedFence = await fence.save();
     res.status(httpStatus.CREATED);
-    res.json(savedUser.transform());
+    res.json(savedFence.transform());
   } catch (error) {
-    next(User.checkDuplicateEmail(error));
+    return errorHandler(error, req, res);
   }
 };
 
-/**
- * Replace existing user
- * @public
- */
-exports.replace = async (req, res, next) => {
-  try {
-    const { user } = req.locals;
-    const newUser = new User(req.body);
-    const ommitRole = user.role !== 'admin' ? 'role' : '';
-    const newUserObject = omit(newUser.toObject(), '_id', ommitRole);
-
-    await user.update(newUserObject, { override: true, upsert: true });
-    const savedUser = await User.findById(user._id);
-
-    res.json(savedUser.transform());
-  } catch (error) {
-    next(User.checkDuplicateEmail(error));
-  }
-};
 
 /**
- * Update existing user
+ * Update existing fence
  * @public
  */
 exports.update = (req, res, next) => {
-  const ommitRole = req.locals.user.role !== 'admin' ? 'role' : '';
-  const updatedUser = omit(req.body, ommitRole);
-  const user = Object.assign(req.locals.user, updatedUser);
-
-  user.save()
-    .then(savedUser => res.json(savedUser.transform()))
-    .catch(e => next(User.checkDuplicateEmail(e)));
+  const fence = Object.assign(req.locals.fence);
+  fence.save()
+    .then(savedFence => res.json(savedFence.transform()))
+    .catch(e => errorHandler(e, req, res));
 };
 
 /**
- * Get user list
+ * Get fence list
  * @public
  */
 exports.list = async (req, res, next) => {
   try {
-    const users = await User.list(req.query);
-    const transformedUsers = users.map(user => user.transform());
-    res.json(transformedUsers);
+    const fences = await Fence.list(req.query);
+    const transformedFences = fences.map(fence => fence.transform());
+    res.json(transformedFences);
   } catch (error) {
     next(error);
   }
 };
 
 /**
- * Delete user
+ * Delete fence
  * @public
  */
 exports.remove = (req, res, next) => {
-  const { user } = req.locals;
+  const { fence } = req.locals;
 
-  user.remove()
+  fence.remove()
     .then(() => res.status(httpStatus.NO_CONTENT).end())
     .catch(e => next(e));
 };
