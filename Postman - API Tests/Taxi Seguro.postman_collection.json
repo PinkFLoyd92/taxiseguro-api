@@ -1,0 +1,152 @@
+{
+	"id": "4c48d1f5-581e-17c5-b9d7-bdd39cbbc355",
+	"name": "Taxi Seguro",
+	"description": "",
+	"order": [],
+	"folders": [
+		{
+			"name": "ROUTES",
+			"description": "",
+			"collectionId": "4c48d1f5-581e-17c5-b9d7-bdd39cbbc355",
+			"order": [
+				"21b87c7c-88e7-14a6-4309-789b24727813"
+			],
+			"owner": "999482",
+			"folders_order": [],
+			"auth": null,
+			"id": "5c6766e4-698b-f6e2-689c-8e6576d40dde"
+		},
+		{
+			"name": "USERS",
+			"description": "",
+			"collectionId": "4c48d1f5-581e-17c5-b9d7-bdd39cbbc355",
+			"order": [
+				"2efd67dc-213a-2760-5701-887568a86ab4",
+				"31cac5e7-7c20-1500-b42e-3dbd3a9a898f"
+			],
+			"owner": "999482",
+			"folders_order": [],
+			"auth": null,
+			"id": "c1c3025e-cfd9-35d3-f05c-e6ed186b266d"
+		}
+	],
+	"folders_order": [
+		"c1c3025e-cfd9-35d3-f05c-e6ed186b266d",
+		"5c6766e4-698b-f6e2-689c-8e6576d40dde"
+	],
+	"timestamp": 1515082120446,
+	"owner": "999482",
+	"public": false,
+	"events": [],
+	"variables": [],
+	"auth": null,
+	"requests": [
+		{
+			"id": "21b87c7c-88e7-14a6-4309-789b24727813",
+			"headers": "Content-Type: application/x-www-form-urlencoded\n",
+			"headerData": [
+				{
+					"key": "Content-Type",
+					"value": "application/x-www-form-urlencoded",
+					"description": "",
+					"enabled": true
+				}
+			],
+			"url": "localhost:4000/v1/routes/checkRoute/5a4dc74b71645e3153b37ba7",
+			"folder": "5c6766e4-698b-f6e2-689c-8e6576d40dde",
+			"queryParams": [],
+			"events": [],
+			"pathVariables": {},
+			"pathVariableData": [],
+			"method": "PATCH",
+			"data": [
+				{
+					"key": "position",
+					"value": "[ -79.947786, -2.158966 ]",
+					"description": "",
+					"type": "text",
+					"enabled": true
+				}
+			],
+			"dataMode": "urlencoded",
+			"version": 2,
+			"auth": null,
+			"time": 1515094591527,
+			"name": "CHECK ROUTE",
+			"description": "",
+			"collectionId": "4c48d1f5-581e-17c5-b9d7-bdd39cbbc355",
+			"responses": [],
+			"currentHelper": null,
+			"helperAttributes": null
+		},
+		{
+			"id": "2efd67dc-213a-2760-5701-887568a86ab4",
+			"headers": "",
+			"headerData": [],
+			"url": "localhost:4000/v1/users?page=1&perPage=3",
+			"folder": "c1c3025e-cfd9-35d3-f05c-e6ed186b266d",
+			"queryParams": [
+				{
+					"key": "page",
+					"value": "1",
+					"equals": true,
+					"description": "",
+					"enabled": true
+				},
+				{
+					"key": "perPage",
+					"value": "3",
+					"equals": true,
+					"description": "",
+					"enabled": true
+				},
+				{
+					"key": "role",
+					"value": "monitor",
+					"equals": true,
+					"description": "",
+					"enabled": false
+				}
+			],
+			"events": [],
+			"pathVariables": {},
+			"pathVariableData": [],
+			"method": "GET",
+			"data": null,
+			"dataMode": "params",
+			"version": 2,
+			"auth": null,
+			"time": 1515082356526,
+			"name": "LIST USERS",
+			"description": "GET USER",
+			"collectionId": "4c48d1f5-581e-17c5-b9d7-bdd39cbbc355",
+			"responses": [],
+			"currentHelper": null,
+			"helperAttributes": null
+		},
+		{
+			"id": "31cac5e7-7c20-1500-b42e-3dbd3a9a898f",
+			"headers": "",
+			"headerData": [],
+			"url": "",
+			"queryParams": [],
+			"pathVariables": {},
+			"pathVariableData": [],
+			"events": [],
+			"auth": null,
+			"method": "POST",
+			"collectionId": "4c48d1f5-581e-17c5-b9d7-bdd39cbbc355",
+			"data": null,
+			"dataMode": "params",
+			"name": "CREATE USER",
+			"description": "Creating of users",
+			"descriptionFormat": "html",
+			"time": 1515082473294,
+			"version": 2,
+			"responses": [],
+			"folder": "c1c3025e-cfd9-35d3-f05c-e6ed186b266d",
+			"currentHelper": null,
+			"helperAttributes": null
+		}
+	]
+}

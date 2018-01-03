@@ -17,7 +17,7 @@ module.exports = {
   // POST /v1/users
   createUser: {
     body: {
-      name: Joi.string().max(128),
+      name: Joi.string().max(128).required(),
       password: Joi.string().min(6).max(128).required(),
       role: Joi.string().valid(User.roles),
     },

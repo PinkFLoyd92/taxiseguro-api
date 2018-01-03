@@ -40,7 +40,7 @@ exports.create = async (req, res, next) => {
     res.status(httpStatus.CREATED);
     res.json(savedUser.transform());
   } catch (error) {
-    next(User.checkDuplicateEmail(error));
+    next(error);
   }
 };
 
@@ -60,7 +60,7 @@ exports.replace = async (req, res, next) => {
 
     res.json(savedUser.transform());
   } catch (error) {
-    next(User.checkDuplicateEmail(error));
+    next(error);
   }
 };
 
@@ -75,7 +75,7 @@ exports.update = (req, res, next) => {
 
   user.save()
     .then(savedUser => res.json(savedUser.transform()))
-    .catch(e => next(User.checkDuplicateEmail(e)));
+    .catch(e => next(e));
 };
 
 /**
@@ -98,7 +98,6 @@ exports.list = async (req, res, next) => {
  */
 exports.remove = (req, res, next) => {
   const { user } = req.locals;
-
   user.remove()
     .then(() => res.status(httpStatus.NO_CONTENT).end())
     .catch(e => next(e));

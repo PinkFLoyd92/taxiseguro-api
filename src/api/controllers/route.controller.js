@@ -1,3 +1,7 @@
+const lineString = require('@turf/helpers').lineString;
+const point = require('@turf/helpers').point;
+const isPointInPolygon = require('@turf/boolean-point-in-polygon');
+const buffer = require('@turf/buffer');
 const httpStatus = require('http-status');
 const Route = require('../models/route.model');
 const { handler: errorHandler } = require('../middlewares/error');
@@ -65,11 +69,18 @@ exports.remove = (req, res, next) => {
 
 
 exports.checkRoute = (req, res, next) => {
-  if(!req.query._id) {
-
+  const { route } = req.locals;
+  const linestring1 = lineString(route.points.coordinates);
+  const _point = point(req.body.position);
+  const buffered = buffer(linestring1, 10, { units: 'kilometers' });
+  const isInBuffer = isPointInPolygon(_point, buffered.geometry);
+  // emiting alert...
+  if (isInBuffer) {
+    try {
+      req.app.io.to(req.params.routeId).emit('DANGER', { danger: 'danger' });
+    } catch (e) {
+      console.error('Something wrong happened, ', e);
+    }
   }
-
-  route.remove()
-    .then(() => res.status(httpStatus.NO_CONTENT).end())
-    .catch(e => next(e));
+  res.send(isInBuffer);
 };

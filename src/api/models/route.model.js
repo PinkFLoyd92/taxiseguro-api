@@ -35,6 +35,20 @@ const routeSchema = new mongoose.Schema({
 /**
  * Statics
  */
+
+routeSchema.method({
+  transform() {
+    const transformed = {};
+    const fields = ['points', 'start', 'end', 'createdAt', 'status'];
+
+    fields.forEach((field) => {
+      transformed[field] = this[field];
+    });
+
+    return transformed;
+  },
+
+});
 routeSchema.statics = {
 
   possibleStatus,

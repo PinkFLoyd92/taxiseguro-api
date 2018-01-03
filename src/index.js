@@ -19,6 +19,7 @@ mongoose.connect();
 app.listen(port, () => console.info(`server started on port ${port} (${env})`));
 
 const socketClients = new Map();
+app.socketClients = socketClients;
 // const checkUsersInRoom = (roomId) => {
 //   io.in(roomId).clients((error, clients) => {
 //     if (error) throw error;

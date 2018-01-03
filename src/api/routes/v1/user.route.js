@@ -39,7 +39,7 @@ router
   .get(validate(listUsers), controller.list)
   /**
    * @api {post} v1/users Create User
-   * @apiDescription Create a new user
+   * @apiDescription Create a new use
    * @apiVersion 1.0.0
    * @apiName CreateUser
    * @apiGroup User

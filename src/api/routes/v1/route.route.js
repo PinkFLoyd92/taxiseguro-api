@@ -1,12 +1,13 @@
 const express = require('express');
-// const validate = require('express-validation');
+const validate = require('express-validation');
 const controller = require('../../controllers/route.controller');
-// const {
+ const {
+   checkRoute
 //   listRoutes,
 //   createRoute,
 //   replaceRoute,
 //   updateRoute,
-// } = require('../../validations/route.validation');
+ } = require('../../validations/route.validation');
 
 const router = express.Router();
 
@@ -29,7 +30,7 @@ router
 
 router
   .route('/checkRoute/:routeId')
-  .get(controller.checkRoute);
+  .patch(validate(checkRoute), controller.checkRoute);
 
 
 module.exports = router;
