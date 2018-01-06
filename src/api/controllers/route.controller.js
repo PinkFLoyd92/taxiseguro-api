@@ -1,5 +1,6 @@
 const lineString = require('@turf/helpers').lineString;
 const point = require('@turf/helpers').point;
+const multiPoint = require('@turf/helpers').multiPoint;
 const isPointInPolygon = require('@turf/boolean-point-in-polygon');
 const buffer = require('@turf/buffer');
 const httpStatus = require('http-status');
@@ -32,6 +33,9 @@ exports.get = (req, res) => res.json(req.locals.route.transform());
  */
 exports.create = async (req, res, next) => {
   try {
+    // arreglar esto...
+    req.body.points = multiPoint(req.body.points);
+    req.body.points = req.body.points.geometry;
     const route = new Route(req.body);
     const savedRoute = await route.save();
     res.status(httpStatus.CREATED);

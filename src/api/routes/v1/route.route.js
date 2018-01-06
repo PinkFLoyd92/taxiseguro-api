@@ -1,13 +1,14 @@
 const express = require('express');
 const validate = require('express-validation');
 const controller = require('../../controllers/route.controller');
- const {
-   checkRoute
+const {
+  createRoute,
+  checkRoute,
 //   listRoutes,
 //   createRoute,
 //   replaceRoute,
 //   updateRoute,
- } = require('../../validations/route.validation');
+} = require('../../validations/route.validation');
 
 const router = express.Router();
 
@@ -20,7 +21,7 @@ router.param('routeId', controller.load);
 router
   .route('/')
   .get(controller.list)
-  .post(controller.create);
+  .post(validate(createRoute), controller.create);
 
 
 router

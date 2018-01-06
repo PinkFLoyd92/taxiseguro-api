@@ -19,27 +19,41 @@ mongoose.connect();
 app.listen(port, () => console.info(`server started on port ${port} (${env})`));
 
 const socketClients = new Map();
+const drivers = [];
+const clients = [];
+const monitors = [];
 app.socketClients = socketClients;
-// const checkUsersInRoom = (roomId) => {
-//   io.in(roomId).clients((error, clients) => {
-//     if (error) throw error;
-//     console.info(clients); // => [Anw2LatarvGVVXEIAAAD]
-//   });
-// };
+app.drivers = drivers;
+app.clients = clients;
+app.monitors = monitors;
 
 io.set('origins', '*:*');
 io.on('connection', (socket) => {
   console.log('new connection', socket);
 
-  socket.on('create', (room) => {
+  socket.on('joinRoute', (room) => {
     socket.join(room);
   });
 
   socket.on('sendInfo', (data) => {
     const userInfo = {};
     userInfo._id = data._id;
+    userInfo.role = data.role;
     userInfo.socketId = socket.id;
     socketClients.set(socket.id, userInfo);
+    switch (userInfo.role) {
+      case 'client':
+        clients.push(userInfo);
+        break;
+      case 'driver':
+        drivers.push(userInfo);
+        break;
+      case 'monitor':
+        monitors.push(userInfo);
+        break;
+      default:
+        break;
+    }
   });
 
   socket.on('disconnect', () => {
