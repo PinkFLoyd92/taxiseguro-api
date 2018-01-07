@@ -17,6 +17,14 @@ router.param('userId', controller.load);
 
 
 router
+  .route('/auth_monitor')
+  .post(controller.auth_monitor);
+
+router
+  .route('/auth')
+  .post(controller.auth);
+
+router
   .route('/')
   /**
    * @api {get} v1/users List Users

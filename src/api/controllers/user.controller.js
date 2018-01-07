@@ -102,3 +102,35 @@ exports.remove = (req, res, next) => {
     .then(() => res.status(httpStatus.NO_CONTENT).end())
     .catch(e => next(e));
 };
+
+
+exports.auth = (req, res, next) => {
+  // console.info(req.body);
+  User.findOne({ name: req.body.username, password: req.body.password }).then((user) => {
+    if (!user) {
+      res.status(httpStatus.NOT_FOUND).end();
+    } else {
+      console.info('Found user');
+      res.send(user);
+    }
+  }).catch((e) => {
+    console.error(e);
+    res.send(httpStatus.BAD_REQUEST);
+  });
+};
+
+exports.auth_monitor = (req, res, next) => {
+  // console.info(req.body);
+  User.findOne({ name: req.body.username, password: req.body.password, role: 'monitor' }).then((user) => {
+    if (!user) {
+      res.status(httpStatus.NOT_FOUND).end();
+    } else {
+      console.info('Found user');
+      res.send(user);
+    }
+  }).catch((e) => {
+    console.error(e);
+    res.send(httpStatus.BAD_REQUEST);
+  });
+};
+
