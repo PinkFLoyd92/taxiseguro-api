@@ -23,6 +23,14 @@ const routeSchema = new mongoose.Schema({
   points: mongoose.Schema.Types.MultiPoint,
   start: mongoose.Schema.Types.Point,
   end: mongoose.Schema.Types.Point,
+  pointsClient: {
+    type: mongoose.Schema.Types.MultiPoint,
+    select: false,
+  },
+  pointsDriver: {
+    type: mongoose.Schema.Types.MultiPoint,
+    select: false,
+  },
   status: {
     type: String,
     enum: possibleStatus,
@@ -38,14 +46,15 @@ const routeSchema = new mongoose.Schema({
 
 routeSchema.method({
   transform() {
-    const transformed = {};
-    const fields = ['points', 'start', 'end', 'createdAt', 'status'];
+    // const transformed = {};
+    // const fields = ['points', 'start', 'end', 'createdAt', 'status', 'driver', 'client', '_id'];
 
-    fields.forEach((field) => {
-      transformed[field] = this[field];
-    });
+    // fields.forEach((field) => {
+    //   transformed[field] = this[field];
+    // });
 
-    return transformed;
+    return this;
+    // return transformed;
   },
 
 });
@@ -79,6 +88,46 @@ routeSchema.statics = {
     }
   },
 
+
+  /**
+   * Update Position
+   *
+   * @param {ObjectId} id - The objectId of route.
+   * @param {String} typeOfUser - The type of user (driver, client).
+   * @param {Array} Point - The point to add (driver, client).
+   * @returns {Promise<Route, APIError>}
+   */
+  async updateUserPosition(id, typeOfUser, point) {
+    try {
+      let route;
+
+      if (mongoose.Types.ObjectId.isValid(id)) {
+        route = await this.findById(id).exec();
+      }
+      if (route) {
+        switch (typeOfUser) {
+          case 'driver':
+            route.pointsDriver.push(point);
+            break;
+          case 'client':
+            route.pointsDriver.push(point);
+            break;
+          default:
+            break;
+        }
+        return {
+          status: httpStatus.OK,
+        };
+      }
+
+      throw new APIError({
+        message: 'Route does not exist',
+        status: httpStatus.NOT_FOUND,
+      });
+    } catch (error) {
+      throw error;
+    }
+  },
   /**
    * List routes in descending order of 'createdAt' timestamp.
    *
@@ -96,6 +145,30 @@ routeSchema.statics = {
       .skip(perPage * (page - 1))
       .limit(perPage)
       .exec();
+  },
+
+  /**
+   * List activeroutes paginated
+   *
+   * @param {number} skip - Number of routes to be skipped.
+   * @param {number} limit - Limit number of routes to be returned.
+   * @returns {Promise<Route[]>}
+   */
+  listActive({
+    page = 1, perPage = 30,
+  }) {
+    const options = omitBy({ }, isNil);
+    return this.find({ status: 'active' })
+      .populate('client')
+      .populate('driver ')
+      .sort({ createdAt: -1 })
+      .skip(perPage * (page - 1))
+      .limit(perPage)
+      .exec((err, route) => {
+        if (err) return (err);
+        // console.info(route);
+        return route;
+      });
   },
 };
 

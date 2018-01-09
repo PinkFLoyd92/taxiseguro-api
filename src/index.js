@@ -29,13 +29,14 @@ app.monitors = monitors;
 
 io.set('origins', '*:*');
 io.on('connection', (socket) => {
-  console.log('new connection', socket);
-
+  console.info('New Socket');
   socket.on('joinRoute', (room) => {
     socket.join(room);
   });
 
   socket.on('sendInfo', (data) => {
+    console.info('RETRIEVING USER INFO FROM CLIENT');
+    data = data.user;
     const userInfo = {};
     userInfo._id = data._id;
     userInfo.role = data.role;
@@ -57,6 +58,7 @@ io.on('connection', (socket) => {
   });
 
   socket.on('disconnect', () => {
+    console.info("DISCONNECTED SOCKET...");
     try {
       socketClients.delete(socket.id);
       console.info('Removing socket...');

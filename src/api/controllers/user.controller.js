@@ -125,7 +125,7 @@ exports.auth_monitor = (req, res, next) => {
     if (!user) {
       res.status(httpStatus.NOT_FOUND).end();
     } else {
-      console.info('Found user');
+      // console.info('Found user');
       res.send(user);
     }
   }).catch((e) => {

@@ -59,6 +59,17 @@ exports.list = async (req, res, next) => {
   }
 };
 
+
+exports.listActive = async (req, res, next) => {
+  try {
+    const routes = await Route.listActive(req.query);
+    const transformedRoutes = routes.map(route => route.transform());
+    res.json(transformedRoutes);
+  } catch (error) {
+    next(error);
+  }
+};
+
 /**
  * Delete route
  * @public

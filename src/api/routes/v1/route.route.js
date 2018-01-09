@@ -25,6 +25,10 @@ router
 
 
 router
+  .route('/active')
+  .get(controller.listActive);
+
+router
   .route('/:routeId')
   .get(controller.get)
   .delete(controller.remove);
