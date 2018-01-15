@@ -105,8 +105,7 @@ exports.remove = (req, res, next) => {
 
 
 exports.auth = (req, res, next) => {
-  // console.info(req.body);
-  User.findOne({ name: req.body.username, password: req.body.password }).then((user) => {
+  User.findOne({ username: req.body.username, password: req.body.password }).then((user) => {
     if (!user) {
       res.status(httpStatus.NOT_FOUND).end();
     } else {
@@ -121,7 +120,7 @@ exports.auth = (req, res, next) => {
 
 exports.auth_monitor = (req, res, next) => {
   // console.info(req.body);
-  User.findOne({ name: req.body.username, password: req.body.password, role: 'monitor' }).then((user) => {
+  User.findOne({ username: req.body.username, password: req.body.password, role: 'monitor' }).then((user) => {
     if (!user) {
       res.status(httpStatus.NOT_FOUND).end();
     } else {

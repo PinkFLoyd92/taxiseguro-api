@@ -24,6 +24,22 @@ const userSchema = new mongoose.Schema({
     index: true,
     trim: true,
   },
+  cedula: {
+    type: String,
+    maxlength: 10,
+    trim: true,
+  },
+  mobile: {
+    type: String,
+    maxlength: 15,
+    trim: true,
+  },
+  username: {
+    type: String,
+    maxlength: 60,
+    index: true,
+    trim: true,
+  },
   password: {
     type: String,
     required: true,
@@ -34,6 +50,14 @@ const userSchema = new mongoose.Schema({
     type: String,
     enum: roles,
     default: 'driver',
+  },
+  vehicle_plate: {
+    type: String,
+    maxlength: 10,
+  },
+  vehicle_description: {
+    type: String,
+    maxlength: 200,
   },
   isMoving: {
     type: Boolean,
@@ -50,7 +74,7 @@ const userSchema = new mongoose.Schema({
 userSchema.method({
   transform() {
     const transformed = {};
-    const fields = ['id', 'name', 'role', 'createdAt'];
+    const fields = ['_id', 'name', 'role', 'createdAt'];
 
     fields.forEach((field) => {
       transformed[field] = this[field];

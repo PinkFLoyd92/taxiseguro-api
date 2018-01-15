@@ -18,6 +18,9 @@ module.exports = {
   createUser: {
     body: {
       name: Joi.string().max(128).required(),
+      cedula: Joi.string().min(10).max(10).required(),
+      mobile: Joi.string().max(15),
+      username: Joi.string().max(60).required(),
       password: Joi.string().min(6).max(128).required(),
       role: Joi.string().valid(User.roles),
     },
@@ -39,6 +42,9 @@ module.exports = {
   updateUser: {
     body: {
       name: Joi.string().max(128),
+      cedula: Joi.string().min(10).max(10),
+      mobile: Joi.string().max(15),
+      username: Joi.string().max(60),
       password: Joi.string().min(6).max(128),
       role: Joi.string().valid(User.roles),
     },
