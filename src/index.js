@@ -29,7 +29,6 @@ app.monitors = monitors;
 
 io.set('origins', '*:*');
 io.on('connection', (socket) => {
-
   socket.on('joinRoute', (room) => {
     socket.join(room);
   });
@@ -65,7 +64,7 @@ io.on('connection', (socket) => {
 
   socket.on('POSITION', (data) => {
     try {
-      console.info('data: ', data);
+      // console.info('data: ', data);
     } catch (e) {
       console.error('Something wrong happened, ', e);
     }

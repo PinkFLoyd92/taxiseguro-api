@@ -112,6 +112,10 @@ exports.checkRoute = (req, res, next) => {
 
 // choosing driver
 const chooseDriver = (req, res, next, route) => {
+  if (!req.app.drivers || req.app.drivers.length === 0) {
+    res.status(httpStatus.NOT_ACCEPTABLE);
+    res.end('error');
+  }
   let maxDistance = 30000; // kilometers
   let driverChosen = null;
   // console.info(req.app.drivers);
@@ -133,8 +137,9 @@ const chooseDriver = (req, res, next, route) => {
           // res.end(err);
         } else if (driverChosen) {
           // console.info("SENDING ROUTE REQUEST...");
-          const userChosen =
-          req.app.io.to(driverChosen.socketId).emit('ROUTE REQUEST', { routeId: route._id });
+          User.get(route.client).then((user) => {
+            req.app.io.to(driverChosen.socketId).emit('ROUTE REQUEST', { user, route });
+          });
         } else {
           console.info('WE COULD NOT FIND ANY DRIVER AVAILABLE.');
           // res.status(httpStatus.NOT_FOUND);
@@ -171,13 +176,12 @@ exports.chooseDriver = (req, res, next) => {
           maxDistance = distance(start, position, { units: 'kilometers' });
         }
         callback();
-      }, (err) => {
+      }, async (err) => {
         if (err) {
           res.end(err);
         } else if (driverChosen) {
-          User.get(route.client).then((user) => {
-            req.app.io.to(driverChosen.socketId).emit('ROUTE REQUEST', { user, route });
-          });
+          const user = await User.get(route.client);
+          req.app.io.to(driverChosen.socketId).emit('ROUTE REQUEST', { user, route });
           res.status(httpStatus.OK);
           res.end(JSON.stringify(driverChosen));
         } else {
