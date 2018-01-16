@@ -65,6 +65,7 @@
   "dependencies": {
     "@turf/boolean-point-in-polygon": "^5.1.5",
     "@turf/buffer": "^5.1.5",
+    "@turf/distance": "^5.1.5",
     "@turf/helpers": "^5.1.5",
     "axios": "^0.16.2",
     "bcryptjs": "2.4.3",

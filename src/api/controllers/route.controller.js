@@ -3,8 +3,10 @@ const point = require('@turf/helpers').point;
 const multiPoint = require('@turf/helpers').multiPoint;
 const isPointInPolygon = require('@turf/boolean-point-in-polygon');
 const buffer = require('@turf/buffer');
+const distance = require('@turf/distance');
 const httpStatus = require('http-status');
 const Route = require('../models/route.model');
+const User = require('../models/user.model');
 const { handler: errorHandler } = require('../middlewares/error');
 
 /**
@@ -21,11 +23,51 @@ exports.load = async (req, res, next, id) => {
   }
 };
 
+// choosing driver
+exports.chooseDriver = async (req, res, next) => {
+  let maxDistance = 20000; // kilometers
+  let driverChosen = null;
+  // console.info(req.app.drivers);
+  const { route } = req.locals;
+  try {
+    if (route && req.app.drivers.length !== 0) {
+      // check which driver is close to this
+      const start = point([route.start.coordinates[0], route.start.coordinates[1]]);
+      req.app.drivers.forEach(async (driver) => {
+        const user = await User.get(driver._id);
+        // await User.get(driver._id).then((user) => {
+          const position = point([user.location.coordinates[1], user.location.coordinates[0]]);
+          console.info(distance(start, position), { units: 'kilometers' });
+          if (distance(start, position) < maxDistance) {
+            driverChosen = driver;
+            maxDistance = distance(start, position, { units: 'kilometers' });
+          }
+        // }).catch((error) => {
+        //   console.info(error);
+        // });
+      }).then((result) => {
+        console.info(result);
+      });
+      if (driverChosen) {
+        res.status(httpStatus.OK);
+        res.send('Exito');
+        req.app.io.to(driverChosen.socketId).emit('DRIVER REQUEST', req.locals.route);
+      }
+    }
+    res.status(httpStatus.CONFLICT);
+    res.send('NOT AVAILABLE');
+  } catch (error) {
+    res.status(httpStatus.BAD_REQUEST);
+    res.json(error);
+  }
+};
 /**
  * Get route
  * @public
  */
-exports.get = (req, res) => res.json(req.locals.route.transform());
+exports.get = (req, res) => {
+  res.json(req.locals.route.transform());
+};
 
 /**
  * Create new route
@@ -38,10 +80,13 @@ exports.create = async (req, res, next) => {
     req.body.points = req.body.points.geometry;
     const route = new Route(req.body);
     const savedRoute = await route.save();
+    if (savedRoute) {
+      // chooseDriver();
+    }
     res.status(httpStatus.CREATED);
     res.json(savedRoute.transform());
   } catch (error) {
-    res.status(httpStatus.BAD_REQUEST)
+    res.status(httpStatus.BAD_REQUEST);
     res.json(error);
   }
 };

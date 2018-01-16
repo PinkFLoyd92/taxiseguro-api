@@ -110,7 +110,7 @@ exports.auth = (req, res, next) => {
     if (!user) {
       res.status(httpStatus.NOT_FOUND).end();
     } else {
-      console.info('Found user');
+      console.info(user)
       res.send(user);
     }
   }).catch((e) => {
