@@ -29,7 +29,7 @@ app.monitors = monitors;
 
 io.set('origins', '*:*');
 io.on('connection', (socket) => {
-  console.info('New Socket');
+
   socket.on('joinRoute', (room) => {
     socket.join(room);
   });
@@ -62,6 +62,20 @@ io.on('connection', (socket) => {
     }
   });
 
+  socket.on('POSITION', (data) => {
+    try {
+      console.log("data: ", data)
+    } catch (e) {
+      console.error('Something wrong happened, ', e);
+    }
+  })
+  socket.on('ALERT', (data) => {
+    try {
+      console.log("data: ", data)
+    } catch (e) {
+      console.error('Something wrong happened, ', e);
+    }
+  })
   socket.on('disconnect', () => {
     // console.info('DISCONNECTED SOCKET...');
     const userInfo = socketClients.get(socket.id);

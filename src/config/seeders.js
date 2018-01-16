@@ -94,7 +94,12 @@ const data = [
     documents: [
       {
         name: 'Usuario 1',
+        cedula: '0929478321',
+        mobile: '09934213432',
+        username: 'user1',
         password: '123456',
+        vehicle_plate: 'GYA-123',
+        vehicle_description: 'Nissan 370z negro',
         role: 'driver',
         location: {
           type: 'Point',
@@ -103,6 +108,9 @@ const data = [
       },
       {
         name: 'Usuario 2',
+        cedula: '0929478111',
+        mobile: '09934212232',
+        username: 'user2',
         password: '123456',
         role: 'client',
         location: {
@@ -112,6 +120,9 @@ const data = [
       },
       {
         name: 'Usuario 3',
+        cedula: '0912478111',
+        mobile: '09987212232',
+        username: 'user3',
         password: '123456',
         role: 'monitor',
         location: {
