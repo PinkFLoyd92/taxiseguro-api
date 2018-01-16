@@ -35,13 +35,14 @@ io.on('connection', (socket) => {
   });
 
   socket.on('SENDINFO', (data) => {
+    let _data = {};
     console.info('RETRIEVING USER INFO FROM CLIENT');
     if (typeof (data) === 'string') {
-      data = JSON.parse(data);
+      _data = JSON.parse(data);
     }
     const userInfo = {};
-    userInfo._id = data._id;
-    userInfo.role = data.role;
+    userInfo._id = _data._id;
+    userInfo.role = _data.role;
     userInfo.socketId = socket.id;
     socketClients.set(socket.id, userInfo);
     switch (userInfo.role) {
