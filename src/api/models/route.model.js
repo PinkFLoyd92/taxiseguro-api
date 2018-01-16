@@ -49,6 +49,9 @@ routeSchema.method({
     // const transformed = {};
     // const fields = ['points', 'start', 'end', 'createdAt', 'status', 'driver', 'client', '_id'];
 
+    //const transformed = {};
+    //const fields = ['points', 'start', 'end', 'createdAt', 'status', '_id'];
+
     // fields.forEach((field) => {
     //   transformed[field] = this[field];
     // });
