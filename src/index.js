@@ -64,18 +64,18 @@ io.on('connection', (socket) => {
 
   socket.on('POSITION', (data) => {
     try {
-      console.log("data: ", data)
+      console.log('data: ', data);
     } catch (e) {
       console.error('Something wrong happened, ', e);
     }
-  })
-  socket.on('ALERT', (data) => {
+  });
+  socket.on('PANIC BUTTON', (data) => {
     try {
-      console.log("data: ", data)
+      console.log('data: ', data);
     } catch (e) {
       console.error('Something wrong happened, ', e);
     }
-  })
+  });
   socket.on('disconnect', () => {
     // console.info('DISCONNECTED SOCKET...');
     const userInfo = socketClients.get(socket.id);
