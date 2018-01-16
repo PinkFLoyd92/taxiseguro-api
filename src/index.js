@@ -65,7 +65,7 @@ io.on('connection', (socket) => {
 
   socket.on('POSITION', (data) => {
     try {
-      console.log('data: ', data);
+      console.info('data: ', data);
     } catch (e) {
       console.error('Something wrong happened, ', e);
     }
