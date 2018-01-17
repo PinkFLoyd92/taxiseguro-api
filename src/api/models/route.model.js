@@ -7,7 +7,7 @@ const APIError = require('../utils/APIError');
 /**
 * Route Status
 */
-const possibleStatus = ['inactive', 'active', 'cancelled', 'finished'];
+const possibleStatus = ['inactive', 'active', 'cancelled', 'finished', 'pending'];
 
 /**
  * Route Schema
@@ -34,7 +34,7 @@ const routeSchema = new mongoose.Schema({
   status: {
     type: String,
     enum: possibleStatus,
-    default: 'inactive',
+    default: 'pending',
   },
 }, {
   timestamps: true,

@@ -7,6 +7,9 @@ const mongoose = require('./config/mongoose');
 
 const server = http.createServer(app);
 const io = require('socket.io').listen(server);
+const {
+  canRouteActivate,
+} = require('./api/utils/GeoHandler');
 
 server.listen(9000);
 console.info('Socket Server listening in port 9000');
@@ -70,14 +73,21 @@ io.on('connection', (socket) => {
   data parameters: { position, route_id, role }
 */
   socket.on('POSITION', (data) => {
+    let _data = {};
+    if (typeof (data) === 'string') {
+      _data = JSON.parse(data);
+    }
     try {
-      if (!data.role) {
+      if (!_data.role) {
+        console.info(_data);
+        console.info('PLEASE SEND THE ROLE OF THE USER...');
         return;
       }
-      if (data.role === 'driver') {
-        io.to(data.route_id).emit('ROUTE - POSITION DRIVER', { position: data.position });
-      } else if (data.role === 'client') {
-        io.to(data.route_id).emit('ROUTE - POSITION CLIENT', { position: data.position });
+      canRouteActivate(io, _data.route_id, drivers, clients, monitors);
+      if (_data.role === 'driver') {
+        io.to(_data.route_id).emit('ROUTE - POSITION DRIVER', { position: _data.position });
+      } else if (_data.role === 'client') {
+        io.to(_data.route_id).emit('ROUTE - POSITION CLIENT', { position: _data.position });
       } else {
         console.error('PLEASE ADD THE ROLE TO THE DATA PAYLOAD.');
       }
@@ -138,4 +148,3 @@ io.on('connection', (socket) => {
 * @public
 */
 module.exports = app;
-

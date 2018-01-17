@@ -122,16 +122,32 @@ const chooseDriver = (req, res, next, route) => {
   try {
     if (route && req.app.drivers.length !== 0) {
       // check which driver is close to this
-      const start = point([route.start.coordinates[0], route.start.coordinates[1]]);
+      const start = point([route.start.coordinates[1], route.start.coordinates[0]]);
       async.forEach(req.app.drivers, async (driver, callback) => {
-        const user = await User.get(driver._id);
-        const position = point([user.location.coordinates[1], user.location.coordinates[0]]);
-        if (distance(start, position) < maxDistance) {
-          driverChosen = driver;
-          maxDistance = distance(start, position, { units: 'kilometers' });
+        try {
+          const tmpRoute = await Route.findOne({
+            driver: driver._id,
+            status: { $in: ['active', 'pending'] },
+          }).exec().catch((e) => {
+            console.error('Something bad happened, ', e);
+          });
+          if (!tmpRoute) {
+            const user = await User.get(driver._id);
+            const position = point([user.location.coordinates[1], user.location.coordinates[0]]);
+            if (distance(start, position) < maxDistance) {
+              driverChosen = driver;
+              maxDistance = distance(start, position, { units: 'kilometers' });
+            }
+          }
+          callback();
+        } catch (e) {
+          console.error('Something wrong happened, ', e);
         }
-        callback();
       }, async (err) => {
+        if (!driverChosen) {
+          res.status(httpStatus.CONFLICT);
+          res.end('COULD NOT FIND A DRIVER');
+        }
         if (err) {
           console.error('ERROR HAPPENED LOOKING FOR A DRIVER', err);
           // res.end(err);
@@ -165,17 +181,31 @@ exports.chooseDriver = (req, res, next) => {
   const { route } = req.locals;
   try {
     if (route && req.app.drivers.length !== 0) {
-      // check which driver is close to this
-      const start = point([route.start.coordinates[0], route.start.coordinates[1]]);
+      const start = point([route.start.coordinates[1], route.start.coordinates[0]]);
       async.forEach(req.app.drivers, async (driver, callback) => {
-        const user = await User.get(driver._id);
-        const position = point([user.location.coordinates[1], user.location.coordinates[0]]);
-        if (distance(start, position) < maxDistance) {
-          driverChosen = driver;
-          maxDistance = distance(start, position, { units: 'kilometers' });
+      // check if driver is already in a route.
+        const tmpRoute = await Route.findOne({
+          driver: driver._id,
+          status: { $in: ['active', 'pending'] },
+        }).exec().catch((e) => {
+          console.error(e);
+        });
+        if (!tmpRoute) {
+          const user = await User.get(driver._id);
+          const position = point([user.location.coordinates[1], user.location.coordinates[0]]);
+          // validar si conductor ya esta en ruta
+          if (distance(start, position) < maxDistance) {
+            driverChosen = driver;
+            maxDistance = distance(start, position, { units: 'kilometers' });
+          }
+          callback();
         }
         callback();
       }, async (err) => {
+        if (!driverChosen) {
+          res.status(httpStatus.CONFLICT);
+          res.end('COULD NOT FIND A DRIVER');
+        }
         if (err) {
           res.end(err);
         } else if (driverChosen) {
@@ -197,3 +227,4 @@ exports.chooseDriver = (req, res, next) => {
     res.json(error);
   }
 };
+

@@ -103,7 +103,7 @@ const data = [
         role: 'driver',
         location: {
           type: 'Point',
-          coordinates: [-2.14403, -79.96104],
+          coordinates: [-79.96104, -2.14403],
         },
       },
       {
@@ -115,7 +115,7 @@ const data = [
         role: 'client',
         location: {
           type: 'Point',
-          coordinates: [-2.14403, -79.96104],
+          coordinates: [-79.96104, -2.14403],
         },
       },
       {
@@ -127,7 +127,7 @@ const data = [
         role: 'monitor',
         location: {
           type: 'Point',
-          coordinates: [-2.14403, -79.96104],
+          coordinates: [-79.96104, -2.14403],
         },
       },
     ],

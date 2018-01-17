@@ -8,6 +8,7 @@ require('dotenv-safe').load({
 
 module.exports = {
   env: process.env.NODE_ENV,
+  maxDistance: process.env.MAX_DISTANCE_USERS,
   port: process.env.PORT,
   mongo: {
     uri: process.env.NODE_ENV === 'test'
