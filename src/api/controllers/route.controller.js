@@ -131,19 +131,18 @@ const chooseDriver = (req, res, next, route) => {
           maxDistance = distance(start, position, { units: 'kilometers' });
         }
         callback();
-      }, (err) => {
+      }, async (err) => {
         if (err) {
           console.error('ERROR HAPPENED LOOKING FOR A DRIVER', err);
           // res.end(err);
         } else if (driverChosen) {
-          // console.info("SENDING ROUTE REQUEST...");
-          User.get(route.client).then((user) => {
-            req.app.io.to(driverChosen.socketId).emit('ROUTE REQUEST', { user, route });
-          });
+          const user = await User.get(route.client);
+          // agregamos el conductor a la ruta.
+          const newRoute = Object.assign(route, { driver: driverChosen._id });
+          await newRoute.save();
+          req.app.io.to(driverChosen.socketId).emit('ROUTE REQUEST', { user, route });
         } else {
           console.info('WE COULD NOT FIND ANY DRIVER AVAILABLE.');
-          // res.status(httpStatus.NOT_FOUND);
-          // res.end('Not found');
         }
       });
     }
@@ -181,6 +180,8 @@ exports.chooseDriver = (req, res, next) => {
           res.end(err);
         } else if (driverChosen) {
           const user = await User.get(route.client);
+          const newRoute = Object.assign(route, { driver: driverChosen._id });
+          await newRoute.save();
           req.app.io.to(driverChosen.socketId).emit('ROUTE REQUEST', { user, route });
           res.status(httpStatus.OK);
           res.end(JSON.stringify(driverChosen));

@@ -29,7 +29,11 @@ app.monitors = monitors;
 
 io.set('origins', '*:*');
 io.on('connection', (socket) => {
-  socket.on('joinRoute', (room) => {
+/*
+  JUST SEND THE ROOM ID
+*/
+  socket.on('JOIN ROUTE', (room) => {
+    // JOINING ROUTE
     socket.join(room);
   });
 
@@ -62,16 +66,30 @@ io.on('connection', (socket) => {
     }
   });
 
+  /*
+  data parameters: { position, route_id, role }
+*/
   socket.on('POSITION', (data) => {
     try {
-      console.info('data: ', data);
+      if (!data.role) {
+        return;
+      }
+      if (data.role === 'driver') {
+        io.to(data.route_id).emit('ROUTE - POSITION DRIVER', { position: data.position });
+      } else if (data.role === 'client') {
+        io.to(data.route_id).emit('ROUTE - POSITION CLIENT', { position: data.position });
+      } else {
+        console.error('PLEASE ADD THE ROLE TO THE DATA PAYLOAD.');
+      }
     } catch (e) {
       console.error('Something wrong happened, ', e);
     }
   });
   socket.on('PANIC BUTTON', (data) => {
     try {
-      console.log('data: ', data);
+      monitors.forEach((monitor) => {
+        io.to(monitor.socketId).emit('PANIC BUTTON', data);
+      });
     } catch (e) {
       console.error('Something wrong happened, ', e);
     }
