@@ -73,14 +73,14 @@ const userSchema = new mongoose.Schema({
  */
 userSchema.method({
   transform() {
-    const transformed = {};
-    const fields = ['_id', 'name', 'role', 'createdAt'];
+    // const transformed = {};
+    // const fields = ['_id', 'name', 'role', 'createdAt'];
 
-    fields.forEach((field) => {
-      transformed[field] = this[field];
-    });
+    // fields.forEach((field) => {
+    //   transformed[field] = this[field];
+    // });
 
-    return transformed;
+    // return transformed;
   },
 
 });

@@ -70,20 +70,21 @@ io.on('connection', (socket) => {
   });
 
   /*
-  data parameters: { position, route_id, role }
+  data parameters: { position, route_id, role, userId  }
 */
-  socket.on('POSITION', (data) => {
+  socket.on('POSITION', async (data) => {
     let _data = {};
     if (typeof (data) === 'string') {
       _data = JSON.parse(data);
     }
     try {
-      if (!_data.role) {
+      if (!_data.role || !_data.userId) {
         console.info(_data);
         console.info('PLEASE SEND THE ROLE OF THE USER...');
+        console.info('PLEASE SEND THE USERID');
         return;
       }
-      canRouteActivate(io, _data.route_id, drivers, clients, monitors);
+      canRouteActivate(io, _data.route_id, drivers, clients, monitors, _data);
       if (_data.role === 'driver') {
         io.to(_data.route_id).emit('ROUTE - POSITION DRIVER', { position: _data.position });
       } else if (_data.role === 'client') {

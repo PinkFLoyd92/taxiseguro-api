@@ -131,6 +131,7 @@ const chooseDriver = (req, res, next, route) => {
           }).exec().catch((e) => {
             console.error('Something bad happened, ', e);
           });
+          console.info(tmpRoute);
           if (!tmpRoute) {
             const user = await User.get(driver._id);
             const position = point([user.location.coordinates[1], user.location.coordinates[0]]);
@@ -159,6 +160,8 @@ const chooseDriver = (req, res, next, route) => {
           req.app.io.to(driverChosen.socketId).emit('ROUTE REQUEST', { user, route });
         } else {
           console.info('WE COULD NOT FIND ANY DRIVER AVAILABLE.');
+          res.status(httpStatus.CONFLICT);
+          res.end('COULD NOT FIND A DRIVER');
         }
       });
     }
