@@ -163,7 +163,7 @@ routeSchema.statics = {
     page = 1, perPage = 30,
   }) {
     const options = omitBy({ }, isNil);
-    return this.find({ status: 'active' })
+    return this.find({ status: { $in: ['active', 'pending'] } })
       .populate('client')
       .populate('driver ')
       .sort({ createdAt: -1 })
@@ -174,6 +174,31 @@ routeSchema.statics = {
         // console.info(route);
         return route;
       });
+  },
+  /**
+   * Check if user is in Route [active or pending]
+   *
+   * @param {ObjectId} id - The objectId of route.
+   * @returns {Promise<Route, APIError>}
+   */
+  async get(id) {
+    try {
+      let route;
+
+      if (mongoose.Types.ObjectId.isValid(id)) {
+        route = await this.findById(id).exec();
+      }
+      if (route) {
+        return route;
+      }
+
+      throw new APIError({
+        message: 'Route does not exist',
+        status: httpStatus.NOT_FOUND,
+      });
+    } catch (error) {
+      throw error;
+    }
   },
 };
 

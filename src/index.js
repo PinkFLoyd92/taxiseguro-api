@@ -9,6 +9,7 @@ const server = http.createServer(app);
 const io = require('socket.io').listen(server);
 const {
   canRouteActivate,
+  isDriverInActiveRoute,
 } = require('./api/utils/GeoHandler');
 
 server.listen(9000);
@@ -101,6 +102,30 @@ io.on('connection', (socket) => {
       monitors.forEach((monitor) => {
         io.to(monitor.socketId).emit('PANIC BUTTON', data);
       });
+    } catch (e) {
+      console.error('Something wrong happened, ', e);
+    }
+  });
+  // _id, role
+  socket.on('DRIVER - IS IN ROUTE?', async (data) => {
+    let _data = {};
+    let routeInfo = null;
+    if (typeof (data) === 'string') {
+      _data = JSON.parse(data);
+    } else {
+      _data = data;
+    }
+
+    try {
+      routeInfo = await isDriverInActiveRoute(_data, io); // route mongoose object
+      if (routeInfo) {
+        console.info('LOADING ROUTE');
+        console.info(routeInfo);
+        io.to(socket.id).emit('DRIVER - IS IN ROUTE', routeInfo);
+        socket.join(routeInfo._id);
+      } else {
+        console.error('ROUTE NOT FOUND...');
+      }
     } catch (e) {
       console.error('Something wrong happened, ', e);
     }

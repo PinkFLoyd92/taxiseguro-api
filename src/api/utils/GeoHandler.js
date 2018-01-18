@@ -41,8 +41,7 @@ exports.canRouteActivate = async (io, routeId, drivers = [], clients = [], monit
   client = await User.get(route.client);
   driver = await User.get(route.driver);
 
-
-  const clientPos = point([route.start.coordinates[1], route.start.coordinates[0]]);
+  const clientPos = point([route.start.coordinates[1], route.start.coordinates[0]]); // cambiar esto por lo del user??
   const driverPos = point([driver.location.coordinates[1], driver.location.coordinates[0]]);
   console.info('distance kilometers: ', distance(driverPos, clientPos), ', DEBE SER MENOR DE 5 KM PARA ACTIVARSE');
   if (distance(driverPos, clientPos) < maxDistance) {
@@ -57,3 +56,12 @@ exports.canRouteActivate = async (io, routeId, drivers = [], clients = [], monit
   return false;
 };
 
+exports.isDriverInActiveRoute = async (data, io) => {
+  const route = await Route.findOne({ driver: data._id, status: { $in: ['active', 'pending'] } })
+    .populate('client')
+    .populate('driver')
+    .select('-updatedAt -createdAt -points')
+    .exec();
+
+  return route;
+};
