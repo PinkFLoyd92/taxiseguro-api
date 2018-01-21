@@ -117,7 +117,7 @@ const data = [
         role: 'driver',
         location: {
           type: 'Point',
-          coordinates: [-79.96104, -2.14403],
+          coordinates: [0,0],
         },
       },
       {
