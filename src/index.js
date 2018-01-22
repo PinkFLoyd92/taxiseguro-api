@@ -11,6 +11,7 @@ const io = require('socket.io').listen(server);
 const {
   checkRouteStatus,
   isDriverInActiveRoute,
+  isClientInActiveRoute,
 } = require('./api/utils/GeoHandler');
 
 server.listen(9000);
@@ -79,7 +80,6 @@ io.on('connection', (socket) => {
     if (typeof (data) === 'string') {
       _data = JSON.parse(data);
     }
-    console.info("GETTING POSITION", _data.role)
     try {
       if (!_data.role || !_data.userId) {
         console.info(_data);
@@ -87,9 +87,7 @@ io.on('connection', (socket) => {
         console.info('PLEASE SEND THE USERID');
         return;
       }
-      checkRouteStatus(io, monitors, _data)
-      //canRouteActivate(io, _data.route_id, drivers, clients, monitors, _data);
-      //canRouteFinish(io, socket, socketClients, clients, monitors, _data);
+      checkRouteStatus(io, monitors, _data);
       if (_data.role === 'driver') {
         io.to(_data.route_id).emit('ROUTE - POSITION DRIVER', { position: _data.position });
       } else if (_data.role === 'client') {
@@ -144,11 +142,11 @@ io.on('connection', (socket) => {
     }
 
     try {
-      routeInfo = await isDriverInActiveRoute(_data, io); // route mongoose object
+      routeInfo = await isClientInActiveRoute(_data, io); // route mongoose object
       if (routeInfo) {
         console.info('LOADING ROUTE');
         console.info(routeInfo);
-        io.to(socket.id).emit('DRIVER - IS IN ROUTE', routeInfo);
+        io.to(socket.id).emit('CLIENT - IS IN ROUTE', routeInfo);
         socket.join(routeInfo._id);
       } else {
         console.error('ROUTE NOT FOUND...');

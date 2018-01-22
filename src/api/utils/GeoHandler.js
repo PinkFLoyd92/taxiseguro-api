@@ -73,16 +73,6 @@ canRouteActivate = async (clientPos, driverPos, route, io, monitors = []) => {
   return false;
 };
 
-exports.isDriverInActiveRoute = async (data, io) => {
-  const route = await Route.findOne({ driver: data._id, status: { $in: ['active', 'pending'] } })
-    .populate('client')
-    .populate('driver')
-    .select('-updatedAt -createdAt -points')
-    .exec();
-
-  return route;
-};
-
 canRouteFinish = async (clientPos, driverPos, route, io, monitors = []) => {
    
   const endPos = point([route.end.coordinates[1], route.end.coordinates[0]]);
@@ -115,3 +105,23 @@ canRouteFinish = async (clientPos, driverPos, route, io, monitors = []) => {
   } 
 
 }
+
+exports.isDriverInActiveRoute = async (data, io) => {
+  const route = await Route.findOne({ driver: data._id, status: { $in: ['active', 'pending'] } })
+    .populate('client')
+    .populate('driver')
+    .select('-updatedAt -createdAt -points')
+    .exec();
+
+  return route;
+};
+
+exports.isClientInActiveRoute = async (data, io) => {
+  const route = await Route.findOne({ client: data._id, status: { $in: ['active', 'pending'] } })
+    .populate('client')
+    .populate('driver')
+    .select('-updatedAt -createdAt -points')
+    .exec();
+
+  return route;
+};
