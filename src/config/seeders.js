@@ -117,7 +117,7 @@ const data = [
         role: 'driver',
         location: {
           type: 'Point',
-          coordinates: [-79.96104, -2.14403],
+          coordinates: [0,0],
         },
       },
       {
@@ -129,6 +129,18 @@ const data = [
         vehicle_plate: 'GYA-123',
         vehicle_description: 'Nissan 370z negro',
         role: 'driver',
+        location: {
+          type: 'Point',
+          coordinates: [-79.96104, -2.14403],
+        },
+      },
+      {
+        name: 'client1',
+        cedula: '0929478123',
+        mobile: '09934213777',
+        username: 'client1',
+        password: '123456',
+        role: 'client',
         location: {
           type: 'Point',
           coordinates: [-79.96104, -2.14403],

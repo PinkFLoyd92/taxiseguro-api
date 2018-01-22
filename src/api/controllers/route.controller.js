@@ -156,11 +156,12 @@ const chooseDriver = (req, res, next, route) => {
           const user = await User.get(route.client);
           const driver = await User.get(driverChosen._id);
           // agregamos el conductor a la ruta.
-          const newRoute = Object.assign(route, { driver: driverChosen._id });
+          const newRoute = Object.assign(route, { driver: driverChosen._id, status: 'pending' });
           await newRoute.save();
           const client = req.app.clients.filter(client => {
             if (client._id == route.client) return client;
           })
+
           req.app.io.to(driverChosen.socketId).emit('ROUTE REQUEST', { user, route });
           if (client) {
             req.app.io.to(client[0].socketId).emit('DRIVER - CHOSEN', driver);
