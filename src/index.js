@@ -1,3 +1,4 @@
+
 // make bluebird default Promise
 Promise = require('bluebird'); // eslint-disable-line no-global-assign
 const { port, env } = require('./config/vars');
@@ -8,8 +9,9 @@ const mongoose = require('./config/mongoose');
 const server = http.createServer(app);
 const io = require('socket.io').listen(server);
 const {
-  canRouteActivate,
+  checkRouteStatus,
   isDriverInActiveRoute,
+  isClientInActiveRoute,
 } = require('./api/utils/GeoHandler');
 
 server.listen(9000);
@@ -85,7 +87,7 @@ io.on('connection', (socket) => {
         console.info('PLEASE SEND THE USERID');
         return;
       }
-      canRouteActivate(io, _data.route_id, drivers, clients, monitors, _data);
+      checkRouteStatus(io, monitors, _data);
       if (_data.role === 'driver') {
         io.to(_data.route_id).emit('ROUTE - POSITION DRIVER', { position: _data.position });
       } else if (_data.role === 'client') {
@@ -122,6 +124,29 @@ io.on('connection', (socket) => {
         console.info('LOADING ROUTE');
         console.info(routeInfo);
         io.to(socket.id).emit('DRIVER - IS IN ROUTE', routeInfo);
+        socket.join(routeInfo._id);
+      } else {
+        console.error('ROUTE NOT FOUND...');
+      }
+    } catch (e) {
+      console.error('Something wrong happened, ', e);
+    }
+  });
+  socket.on('CLIENT - IS IN ROUTE?', async (data) => {
+    let _data = {};
+    let routeInfo = null;
+    if (typeof (data) === 'string') {
+      _data = JSON.parse(data);
+    } else {
+      _data = data;
+    }
+
+    try {
+      routeInfo = await isClientInActiveRoute(_data, io); // route mongoose object
+      if (routeInfo) {
+        console.info('LOADING ROUTE');
+        console.info(routeInfo);
+        io.to(socket.id).emit('CLIENT - IS IN ROUTE', routeInfo);
         socket.join(routeInfo._id);
       } else {
         console.error('ROUTE NOT FOUND...');
