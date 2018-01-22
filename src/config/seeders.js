@@ -47,6 +47,7 @@ function seedRoute(driverName, clientName, info = {}) {
 async function populateAll() {
   await Promise.all([seedRoute('Usuario 1', 'Usuario 2', {
     geoInfo: {
+      status: 'active',
       start: {
         type: 'Point',
         coordinates: [-79.96027, -2.14607],

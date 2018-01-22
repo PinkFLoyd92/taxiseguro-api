@@ -48,7 +48,6 @@ io.on('connection', (socket) => {
   });
 
   socket.on('SENDINFO', (data) => {
-    console.info(data)
     let _data = {};
     console.info('RETRIEVING USER INFO FROM CLIENT');
     if (typeof (data) === 'string') {

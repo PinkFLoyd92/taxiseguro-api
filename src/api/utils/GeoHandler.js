@@ -91,17 +91,17 @@ const canRouteFinish = async (clientPos, driverPos, route, io, monitors = []) =>
 
   if ((clientDistance < maxDistanceToFinish) && (driverDistance < maxDistanceToFinish)) {
     console.info('ROUTE CAN FINISH');
-    route = Object.assign(route, { status: 'finished' });
-    route.save((err, route) => {
-      if (err) { console.error('Something bad happened, ', err); } else if (route) {
-        io.to(route._id).emit('ROUTE - FINISH');
+    const _route = Object.assign(route, { status: 'finished' });
+    _route.save((err, ruta) => {
+      if (err) { console.error('Something bad happened, ', err); } else if (ruta) {
+        io.to(ruta._id).emit('ROUTE - FINISH');
         monitors.forEach((monitor) => {
-          io.to(monitor.socketId).emit('ROUTE - INACTIVE', { route });
+          io.to(monitor.socketId).emit('ROUTE - INACTIVE', { route: ruta });
         });
-        io.of('/').in(route._id).clients((error, socketIds) => {
+        io.of('/').in(ruta._id).clients((error, socketIds) => {
           if (error) throw error;
           socketIds.forEach((socketId) => {
-            io.sockets.sockets[socketId].leave(route._id);
+            io.sockets.sockets[socketId].leave(ruta._id);
           });
         });
       }
@@ -110,7 +110,7 @@ const canRouteFinish = async (clientPos, driverPos, route, io, monitors = []) =>
 };
 
 exports.isDriverInActiveRoute = async (data, io) => {
-  const route = await Route.findOne({ driver: data._id, status: { $in: ['active', 'pending'] } })
+  const route = await Route.findOne({ driver: data._id, status: { $in: ['active', 'pending', 'danger'] } })
     .populate('client')
     .populate('driver')
     .select('-updatedAt -createdAt -points')
@@ -120,7 +120,7 @@ exports.isDriverInActiveRoute = async (data, io) => {
 };
 
 exports.isClientInActiveRoute = async (data, io) => {
-  const route = await Route.findOne({ client: data._id, status: { $in: ['active', 'pending'] } })
+  const route = await Route.findOne({ client: data._id, status: { $in: ['active', 'pending', 'danger'] } })
     .populate('client')
     .populate('driver')
     .select('-updatedAt -createdAt -points')
@@ -146,7 +146,8 @@ const checkBuffer = async (route, data, io, monitors, clientPos) => {
     } catch (e) {
       console.error('Something wrong happened, ', e);
     }
-  } else { // se encuentra dentro del buffer
+  } else if (isInBuffer) { // se encuentra dentro del buffer
+    console.info('ENTRO DE NUEVO al BUFFER');
     try {
       if (route.status === 'danger') {
         const _route = Object.assign(route, { status: 'active' });
