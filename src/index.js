@@ -41,6 +41,10 @@ io.on('connection', (socket) => {
     socket.join(room);
   });
 
+  socket.on('LEAVE ROUTE', (room) => {
+    socket.leave(room);
+  });
+
   socket.on('SENDINFO', (data) => {
     let _data = {};
     console.info('RETRIEVING USER INFO FROM CLIENT');
@@ -87,9 +91,9 @@ io.on('connection', (socket) => {
       }
       canRouteActivate(io, _data.route_id, drivers, clients, monitors, _data);
       if (_data.role === 'driver') {
-        io.to(_data.route_id).emit('ROUTE - POSITION DRIVER', { position: _data.position });
+        io.to(_data.route_id).emit('ROUTE - POSITION DRIVER', { position: _data.position, routeId: _data.route_id });
       } else if (_data.role === 'client') {
-        io.to(_data.route_id).emit('ROUTE - POSITION CLIENT', { position: _data.position });
+        io.to(_data.route_id).emit('ROUTE - POSITION CLIENT', { position: _data.position, routeId: _data.route_id });
       } else {
         console.error('PLEASE ADD THE ROLE TO THE DATA PAYLOAD.');
       }
