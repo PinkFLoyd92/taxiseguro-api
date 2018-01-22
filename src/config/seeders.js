@@ -65,6 +65,27 @@ async function populateAll() {
         ],
       },
     },
+  }), seedRoute('Usuario 1', 'Usuario 2', {
+    geoInfo: {
+      status: 'finished',
+      start: {
+        type: 'Point',
+        coordinates: [-79.96027, -2.14607],
+      },
+      end: {
+        type: 'Point',
+        coordinates: [-79.947786, -2.158966],
+      },
+      points: {
+        type: 'MultiPoint',
+        coordinates: [
+          [-79.958721, -2.147813],
+          [-79.955361, -2.151361],
+          [-79.952895, -2.15198],
+          [-79.946415, -2.157803],
+        ],
+      },
+    },
   })]).then(() => {
     seeder.disconnect();
   });
@@ -117,7 +138,7 @@ const data = [
         role: 'driver',
         location: {
           type: 'Point',
-          coordinates: [0,0],
+          coordinates: [0, 0],
         },
       },
       {

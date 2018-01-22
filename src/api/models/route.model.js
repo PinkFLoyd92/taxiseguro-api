@@ -7,7 +7,7 @@ const APIError = require('../utils/APIError');
 /**
 * Route Status
 */
-const possibleStatus = ['inactive', 'active', 'cancelled', 'finished', 'pending'];
+const possibleStatus = ['inactive', 'active', 'danger', 'finished', 'pending'];
 
 /**
  * Route Schema

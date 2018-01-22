@@ -48,6 +48,7 @@ io.on('connection', (socket) => {
   });
 
   socket.on('SENDINFO', (data) => {
+    console.info(data)
     let _data = {};
     console.info('RETRIEVING USER INFO FROM CLIENT');
     if (typeof (data) === 'string') {
@@ -91,7 +92,7 @@ io.on('connection', (socket) => {
         console.info('PLEASE SEND THE USERID');
         return;
       }
-      checkRouteStatus(io, monitors, _data);
+      await checkRouteStatus(io, monitors, _data);
       if (_data.role === 'driver') {
         io.to(_data.route_id).emit('ROUTE - POSITION DRIVER', { position: _data.position, routeId: _data.route_id });
       } else if (_data.role === 'client') {
