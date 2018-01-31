@@ -37,10 +37,12 @@ exports.checkRouteStatus = async (io, monitors = [], data = {}) => {
   const route = await Route.get(data.route_id);
   if (route) {
     if (!route.driver || !route.client) return false;
+
     let client = null;
     let driver = null;
     let clientPos = null;
     let driverPos = null;
+
     if (data.role === 'client') {
       driver = await User.get(route.driver);
       clientPos = point([data.position.latitude, data.position.longitude]);
@@ -129,12 +131,25 @@ exports.isClientInActiveRoute = async (data, io) => {
   return route;
 };
 
-// 10 KM buffer
+// 0.5 KM buffer
 const checkBuffer = async (route, data, io, monitors, clientPos) => {
-  const linestring1 = lineString(route.points.coordinates);
+  const coordinates = route.points.coordinates.map((coordinate) => {
+    const _coordinate = [coordinate[0], coordinate[1]];
+    const tmp_lat = _coordinate[1];
+    _coordinate[1] = _coordinate[0];
+    _coordinate[0] = tmp_lat;
+    return _coordinate;
+  });
+  const linestring1 = lineString(coordinates);
   const _point = clientPos;
-  const buffered = buffer(linestring1, 10, { units: 'kilometers' });
+  const buffered = buffer(linestring1, 1, { units: 'kilometers' });
   const isInBuffer = isPointInPolygon(_point, buffered.geometry);
+  console.info('DISTANCE BUFFER, ', isInBuffer);
+  if (!isInBuffer) {
+    monitors.forEach((monitor) => {
+      io.to(monitor.socketId).emit('ROUTE - DANGER', { routeId: route._id, outofBuffer: true });
+    });
+  }
   if (!isInBuffer && route.status === 'active') {
     const _route = Object.assign(route, { status: 'danger' });
     await _route.save();
@@ -147,9 +162,10 @@ const checkBuffer = async (route, data, io, monitors, clientPos) => {
       console.error('Something wrong happened, ', e);
     }
   } else if (isInBuffer) { // se encuentra dentro del buffer
-    console.info('ENTRO DE NUEVO al BUFFER');
+    // console.info('SE ENCUENTRA DENTRO DEL BUFFER');
     try {
       if (route.status === 'danger') {
+        console.info('ENTRO DE NUEVO AL BUFFER');
         const _route = Object.assign(route, { status: 'active' });
         await _route.save();
         monitors.forEach((monitor) => {

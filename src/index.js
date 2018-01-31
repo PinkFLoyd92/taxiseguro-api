@@ -1,3 +1,4 @@
+const Route = require('./api/models/route.model');
 
 // make bluebird default Promise
 Promise = require('bluebird'); // eslint-disable-line no-global-assign
@@ -49,26 +50,23 @@ io.on('connection', (socket) => {
 
   socket.on('SENDINFO', (data) => {
     let _data = {};
-    console.info('RETRIEVING USER INFO FROM CLIENT');
-    if (typeof (data) === 'string') {
-      _data = JSON.parse(data);
-    }
     const userInfo = {};
+
+    // _data JSON containing the info.
+    _data = (typeof (data) === 'string') ? JSON.parse(data) : data;
+
     userInfo._id = _data._id;
     userInfo.role = _data.role;
     userInfo.socketId = socket.id;
     socketClients.set(socket.id, userInfo);
     switch (userInfo.role) {
       case 'client':
-        console.info('Nuevo cliente');
         clients.push(userInfo);
         break;
       case 'driver':
-        console.info('Nuevo conductor');
         drivers.push(userInfo);
         break;
       case 'monitor':
-        console.info('Nuevo monitor');
         monitors.push(userInfo);
         break;
       default:
@@ -76,14 +74,36 @@ io.on('connection', (socket) => {
     }
   });
 
+
   /*
-  data parameters: { position, route_id, role, userId  }
+  data: { route_id, user_id, role, message}
+*/
+  socket.on('ROUTE - CHAT', async (data) => {
+    const _data = (typeof (data) === 'string') ? JSON.parse(data) : data;
+    const route = await Route.get(_data.route_id);
+    if (route) {
+      switch (data.role) {
+        case 'client':
+          const clientInfo = clients.find(client => client._id === route.client);
+          io.sockets.to(clientInfo.socketId).emit('ROUTE - CHAT', _data);
+          break;
+        case 'driver':
+          const driverInfo = drivers.find(driver => driver._id === route.driver);
+          io.sockets.to(driverInfo.socketId).emit('ROUTE - CHAT', _data);
+          break;
+        default:
+          console.error('error Role is not well defined...');
+          break;
+      }
+    }
+  });
+
+  /*
+  data: { position, route_id, role, userId  }
 */
   socket.on('POSITION', async (data) => {
-    let _data = {};
-    if (typeof (data) === 'string') {
-      _data = JSON.parse(data);
-    }
+    const _data = (typeof (data) === 'string') ? JSON.parse(data) : data;
+
     try {
       if (!_data.role || !_data.userId) {
         console.info(_data);
