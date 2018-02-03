@@ -1,3 +1,4 @@
+
 const lineString = require('@turf/helpers').lineString;
 const point = require('@turf/helpers').point;
 const async = require('async');
@@ -38,13 +39,29 @@ exports.get = (req, res) => {
  */
 exports.create = async (req, res, next) => {
   try {
-    // arreglar esto...
-    req.body.points = multiPoint(req.body.points);
-    req.body.points = req.body.points.geometry;
-    const route = new Route(req.body);
+    let routeData = {
+      client: req.body.client,
+      points: req.body.points,
+      start: req.body.start,
+      end: req.body.end,
+      status: req.body.status,
+      route_index: req.body.route_index
+    };
+    if (req.body.driver) {
+      routeData.driver = req.body.driver;
+    }
+    if (req.body.supersededRoute) {
+      routeData.supersededRoute = req.body.supersededRoute
+    }
+    routeData.points = multiPoint(req.body.points);
+    routeData.points = req.body.points.geometry;
+    const route = new Route(routeData);
     const savedRoute = await route.save();
-    if (savedRoute) {
+    //if client request for a taxi, choose a driver
+    if (req.body.taxiRequest && savedRoute) {
       chooseDriver(req, res, next, savedRoute);
+    } else if(savedRoute && req.body.supersededRoute) {
+      updateSupersededRoute(req, savedRoute)
     }
     res.status(httpStatus.CREATED);
     res.json(savedRoute.transform());
@@ -161,7 +178,6 @@ const chooseDriver = (req, res, next, route) => {
           const client = req.app.clients.filter(client => {
             if (client._id == route.client) return client;
           })
-
           req.app.io.to(driverChosen.socketId).emit('ROUTE REQUEST', { user, route });
           if (client) {
             req.app.io.to(client[0].socketId).emit('DRIVER - CHOSEN', driver);
@@ -180,8 +196,26 @@ const chooseDriver = (req, res, next, route) => {
     res.json(error);
   }
 };
-
-
+//update superseded route status and send 'ROUTE CHANGE - RESULT' event
+const updateSupersededRoute = (req, savedRoute) => {
+  Route.findById(req.body.supersededRoute, (err, route) => {
+    if (err) {
+      console.error(err)
+    }
+    if (route) {
+      route.status = 'superseded'; 
+      route.save();
+    }
+  });
+  req.app.io.of('/').in(req.body.supersededRoute).clients((error, socketIds) => {
+    if (error) throw error;
+    socketIds.forEach((socketId) => {
+      req.app.io.sockets.sockets[socketId].leave(req.body.supersededRoute);
+      req.app.io.sockets.sockets[socketId].join(savedRoute._id);
+    });
+    req.app.io.to(savedRoute._id).emit('ROUTE CHANGE - RESULT', status="ok", savedRoute)
+  });
+}
 exports.chooseDriver = (req, res, next) => {
   if (!req.app.drivers || req.app.drivers.length === 0) {
     res.status(httpStatus.NOT_ACCEPTABLE);
