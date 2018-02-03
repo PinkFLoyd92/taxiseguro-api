@@ -179,6 +179,21 @@ io.on('connection', (socket) => {
       console.error('Something wrong happened, ', e);
     }
   });
+  socket.on('ROUTE CHANGE - REQUEST', async (data) => {
+    const filterClients = clients.filter(client => client._id === data.clientId);
+    if (filterClients) {
+      io.to(filterClients[0].socketId).emit('ROUTE CHANGE - REQUEST', data);
+    }
+  });
+  socket.on('ROUTE CHANGE - RESULT', async (status, route) => {
+    if (status === 'cancel') {
+      const driverID = route.driverId;
+      const filterDrivers = drivers.filter(driver => driver._id === driverID);
+      if (filterDrivers) {
+        io.to(filterDrivers[0].socketId).emit('ROUTE CHANGE - RESULT', status);
+      }
+    }
+  });
   socket.on('disconnect', () => {
     // console.info('DISCONNECTED SOCKET...');
     const userInfo = socketClients.get(socket.id);
