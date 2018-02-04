@@ -54,7 +54,7 @@ exports.create = async (req, res, next) => {
       routeData.supersededRoute = req.body.supersededRoute
     }
     routeData.points = multiPoint(req.body.points);
-    routeData.points = req.body.points.geometry;
+    routeData.points = routeData.points.geometry;
     const route = new Route(routeData);
     const savedRoute = await route.save();
     //if client request for a taxi, choose a driver
