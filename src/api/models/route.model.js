@@ -170,7 +170,7 @@ routeSchema.statics = {
     page = 1, perPage = 30,
   }) {
     const options = omitBy({ }, isNil);
-    return this.find({ status: { $in: ['active', 'pending', 'danger'] } })
+    return this.find({ status: { $in: ['active', 'danger'] } })
       .populate('client')
       .populate('driver ')
       .sort({ createdAt: -1 })

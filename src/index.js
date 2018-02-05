@@ -14,7 +14,7 @@ const {
   checkRouteStatus,
   isDriverInActiveRoute,
   isClientInActiveRoute,
-  deletePendingRoutesByUserId
+  deletePendingRoutesByUserId,
 } = require('./api/utils/GeoHandler');
 
 server.listen(9000);
@@ -38,7 +38,7 @@ app.monitors = monitors;
 
 io.set('origins', '*:*');
 io.on('connection', (socket) => {
-  socket.on('CHAT - GET MONITORS', async (data) => {
+  socket.on('CHAT - GET MONITORS', async () => {
     await monitors.forEach(async (user) => {
       const usuario = await User.findOne({ _id: user._id });
       console.info('creating monitor...');
@@ -93,7 +93,7 @@ io.on('connection', (socket) => {
     if (route) {
       switch (data.role) {
         case 'client':
-          const clientInfo = clients.find(client => client._id === route.client);
+          const clientInfo = await clients.find(client => client._id == route.client);
           if (!clientInfo) {
             socket.emit('ROUTE - CHAT ERROR', { role: _data.role, route_id: _data.route_id });
             break;
@@ -115,6 +115,13 @@ io.on('connection', (socket) => {
     }
   });
 
+  socket.on('CHAT - SEND FROM CLIENT', async (data) => {
+    const _data = (typeof (data) === 'string') ? JSON.parse(data) : data;
+    monitors.forEach((monitor) => { // cambiar esto...
+      console.info(_data);
+      io.to(monitor.socketId).emit('ROUTE - CHAT RECEIVE', _data);
+    });
+  });
   /*
   data: { position, route_id, role, userId  }
 */
