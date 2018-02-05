@@ -61,7 +61,8 @@ exports.checkRouteStatus = async (io, monitors = [], data = {}) => {
       canRouteFinish(clientPos, driverPos, route, io, monitors);
     } else if (route.status === 'pending') {
       console.info('ROUTE IS NOT ACTIVATED YET');
-      canRouteActivate(clientPos, driverPos, route, io, monitors);
+      if (data.role === 'driver')
+        canRouteActivate(clientPos, driverPos, route, io, monitors);
     }
   }
 };
