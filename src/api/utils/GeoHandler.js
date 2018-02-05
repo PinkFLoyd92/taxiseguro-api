@@ -59,7 +59,7 @@ exports.checkRouteStatus = async (io, monitors = [], data = {}) => {
     if (route.status === 'active' || route.status === 'danger') {
       console.info('ROUTE IS ALREADY ACTIVATED');
       canRouteFinish(clientPos, driverPos, route, io, monitors);
-    } else if (route.status === 'pending') {
+    } else if (route.status === 'pending' && data.role === 'client') {
       console.info('ROUTE IS NOT ACTIVATED YET');
       canRouteActivate(clientPos, driverPos, route, io, monitors);
     }
