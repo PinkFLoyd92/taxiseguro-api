@@ -19,6 +19,13 @@ function callback(err, numAffected) {
   console.info(numAffected);
 }
 
+
+exports.deletePendingRoutesByUserId = async(userId) => {
+  await Route.remove({
+    client: userId,
+    status: "pending"
+  });
+}
 exports.checkRouteStatus = async (io, monitors = [], data = {}) => {
   const conditions = { _id: data.userId };
   const update = {

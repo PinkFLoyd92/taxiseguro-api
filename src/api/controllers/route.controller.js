@@ -67,7 +67,6 @@ exports.create = async (req, res, next) => {
     res.json(savedRoute.transform());
   } catch (error) {
     res.status(httpStatus.BAD_REQUEST);
-    res.json(error);
   }
 };
 
