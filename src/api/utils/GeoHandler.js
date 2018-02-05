@@ -19,6 +19,13 @@ function callback(err, numAffected) {
   console.info(numAffected);
 }
 
+
+exports.deletePendingRoutesByUserId = async(userId) => {
+  await Route.remove({
+    client: userId,
+    status: "pending"
+  });
+}
 exports.checkRouteStatus = async (io, monitors = [], data = {}) => {
   const conditions = { _id: data.userId };
   const update = {
@@ -59,7 +66,7 @@ exports.checkRouteStatus = async (io, monitors = [], data = {}) => {
     if (route.status === 'active' || route.status === 'danger') {
       console.info('ROUTE IS ALREADY ACTIVATED');
       canRouteFinish(clientPos, driverPos, route, io, monitors);
-    } else if (route.status === 'pending') {
+    } else if (route.status === 'pending' && data.role === 'client') {
       console.info('ROUTE IS NOT ACTIVATED YET');
       if (data.role === 'driver')
         canRouteActivate(clientPos, driverPos, route, io, monitors);

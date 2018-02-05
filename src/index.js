@@ -1,4 +1,5 @@
 const Route = require('./api/models/route.model');
+const User = require('./api/models/user.model');
 
 // make bluebird default Promise
 Promise = require('bluebird'); // eslint-disable-line no-global-assign
@@ -13,6 +14,7 @@ const {
   checkRouteStatus,
   isDriverInActiveRoute,
   isClientInActiveRoute,
+  deletePendingRoutesByUserId
 } = require('./api/utils/GeoHandler');
 
 server.listen(9000);
@@ -36,7 +38,14 @@ app.monitors = monitors;
 
 io.set('origins', '*:*');
 io.on('connection', (socket) => {
-/*
+  socket.on('CHAT - GET MONITORS', async (data) => {
+    await monitors.forEach(async (user) => {
+      const usuario = await User.findOne({ _id: user._id });
+      console.info('creating monitor...');
+      socket.emit('CHAT - MONITORS', usuario);
+    });
+  });
+  /*
   JUST SEND THE ROOM ID
 */
   socket.on('JOIN ROUTE', (room) => {
@@ -85,10 +94,18 @@ io.on('connection', (socket) => {
       switch (data.role) {
         case 'client':
           const clientInfo = clients.find(client => client._id === route.client);
+          if (!clientInfo) {
+            socket.emit('ROUTE - CHAT ERROR', { role: _data.role, route_id: _data.route_id });
+            break;
+          }
           io.sockets.to(clientInfo.socketId).emit('ROUTE - CHAT', _data);
           break;
         case 'driver':
           const driverInfo = drivers.find(driver => driver._id === route.driver);
+          if (!driverInfo) {
+            socket.emit('ROUTE - CHAT ERROR', { role: _data.role, route_id: _data.route_id });
+            break;
+          }
           io.sockets.to(driverInfo.socketId).emit('ROUTE - CHAT', _data);
           break;
         default:
@@ -193,6 +210,9 @@ io.on('connection', (socket) => {
         io.to(filterDrivers[0].socketId).emit('ROUTE CHANGE - RESULT', status);
       }
     }
+  });
+  socket.on('ROUTE DELETE', async (userId) => {
+    deletePendingRoutesByUserId(userId);
   });
   socket.on('disconnect', () => {
     // console.info('DISCONNECTED SOCKET...');
