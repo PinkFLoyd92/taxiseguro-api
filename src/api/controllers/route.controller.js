@@ -212,7 +212,13 @@ const updateSupersededRoute = (req, savedRoute) => {
       req.app.io.sockets.sockets[socketId].leave(req.body.supersededRoute);
       req.app.io.sockets.sockets[socketId].join(savedRoute._id);
     });
-    req.app.io.to(savedRoute._id).emit('ROUTE CHANGE - RESULT', status="ok", savedRoute)
+    Route.find({ _id: savedRoute._id})
+    .populate('client')
+    .populate('driver')
+    .exec( (err, route) => {
+      if (err) return err
+      req.app.io.to(savedRoute._id).emit('ROUTE CHANGE - RESULT', status="ok", route[0])
+    });  
   });
 }
 exports.chooseDriver = (req, res, next) => {
