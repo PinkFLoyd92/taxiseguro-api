@@ -14,7 +14,7 @@ const {
   checkRouteStatus,
   isDriverInActiveRoute,
   isClientInActiveRoute,
-  deletePendingRoutesByUserId
+  deletePendingRoutesByUserId,
 } = require('./api/utils/GeoHandler');
 
 server.listen(9000);
@@ -38,7 +38,7 @@ app.monitors = monitors;
 
 io.set('origins', '*:*');
 io.on('connection', (socket) => {
-  socket.on('CHAT - GET MONITORS', async (data) => {
+  socket.on('CHAT - GET MONITORS', async () => {
     await monitors.forEach(async (user) => {
       const usuario = await User.findOne({ _id: user._id });
       console.info('creating monitor...');
