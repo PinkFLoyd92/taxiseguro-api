@@ -217,7 +217,14 @@ const updateSupersededRoute = (req, savedRoute) => {
     .populate('driver')
     .exec( (err, route) => {
       if (err) return err
-      req.app.io.to(savedRoute._id).emit('ROUTE CHANGE - RESULT', status="ok", route[0])
+      req.app.monitors.forEach((monitor) => {
+        req.app.io.to(monitor.socketId).emit('ROUTE CHANGE - RESULT', status="ok", route[0]);
+      });
+      const driverID = route[0].driver._id;
+      const filterDrivers = req.app.drivers.filter(driver => driver._id == driverID);
+      if (filterDrivers) {
+        req.app.io.to(filterDrivers[0].socketId).emit('ROUTE CHANGE - RESULT', status="ok", route[0]);
+      }
     });  
   });
 }
