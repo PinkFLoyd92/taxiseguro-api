@@ -77,6 +77,7 @@ io.on('connection', (socket) => {
         break;
       case 'monitor':
         monitors.push(userInfo);
+        notifyMonitorConnected(_data);
         break;
       default:
         break;
@@ -148,9 +149,10 @@ io.on('connection', (socket) => {
     }
   });
   socket.on('PANIC BUTTON', (data) => {
+    const _data = (typeof (data) === 'string') ? JSON.parse(data) : data;
     try {
       monitors.forEach((monitor) => {
-        io.to(monitor.socketId).emit('PANIC BUTTON', data);
+        io.to(monitor.socketId).emit('PANIC BUTTON', _data);
       });
     } catch (e) {
       console.error('Something wrong happened, ', e);
@@ -242,6 +244,7 @@ io.on('connection', (socket) => {
         case 'monitor':
 
           const indexMonitor = monitors.findIndex(element => element.socketId === socket.id);
+          notifyMonitorDisconnected(monitors[indexMonitor]);
           if (indexMonitor >= 0) {
             monitors.splice(indexMonitor, 1);
           }
@@ -260,6 +263,25 @@ io.on('connection', (socket) => {
     }
   });
 });
+
+function notifyMonitorConnected(data) {
+  drivers.forEach((driver) => {
+    io.sockets.to(driver.socketId).emit('MONITOR - CONNECTED', data);
+  });
+  clients.forEach((client) => {
+    io.sockets.to(client.socketId).emit('MONITOR - CONNECTED', data);
+  });
+}
+
+function notifyMonitorDisconnected(data) {
+  drivers.forEach((driver) => {
+    io.sockets.to(driver.socketId).emit('MONITOR - DISCONNECTED', data);
+  });
+  clients.forEach((client) => {
+    io.sockets.to(client.socketId).emit('MONITOR - DISCONNECTED', data);
+  });
+}
+
 /**
 * Exports express
 * @public
