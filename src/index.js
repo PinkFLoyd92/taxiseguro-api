@@ -15,6 +15,7 @@ const {
   isDriverInActiveRoute,
   isClientInActiveRoute,
   deletePendingRoutesByUserId,
+  saveScore,
 } = require('./api/utils/GeoHandler');
 
 server.listen(9000);
@@ -41,7 +42,6 @@ io.on('connection', (socket) => {
   socket.on('CHAT - GET MONITORS', async () => {
     await monitors.forEach(async (user) => {
       const usuario = await User.findOne({ _id: user._id });
-      console.info('creating monitor...');
       socket.emit('CHAT - MONITORS', usuario);
     });
   });
@@ -94,7 +94,7 @@ io.on('connection', (socket) => {
     if (route) {
       switch (data.role) {
         case 'client':
-          const clientInfo = await clients.find(client => client._id == route.client);
+          const clientInfo = clients.find(client => client._id == route.client);
           if (!clientInfo) {
             socket.emit('ROUTE - CHAT ERROR', { role: _data.role, route_id: _data.route_id });
             break;
@@ -102,7 +102,7 @@ io.on('connection', (socket) => {
           io.sockets.to(clientInfo.socketId).emit('ROUTE - CHAT', _data);
           break;
         case 'driver':
-          const driverInfo = drivers.find(driver => driver._id === route.driver);
+          const driverInfo = drivers.find(driver => driver._id == route.driver);
           if (!driverInfo) {
             socket.emit('ROUTE - CHAT ERROR', { role: _data.role, route_id: _data.route_id });
             break;
@@ -116,12 +116,14 @@ io.on('connection', (socket) => {
     }
   });
 
-  socket.on('CHAT - SEND FROM CLIENT', async (data) => {
+  socket.on('CHAT - SEND FROM USER', async (data) => {
     const _data = (typeof (data) === 'string') ? JSON.parse(data) : data;
-    monitors.forEach((monitor) => { // cambiar esto...
-      console.info(_data);
-      io.to(monitor.socketId).emit('ROUTE - CHAT RECEIVE', _data);
-    });
+    // monitors.forEach((monitor) => { // cambiar esto...
+    //   console.info(_data);
+    //   io.to(monitor.socketId).emit('ROUTE - CHAT RECEIVE', _data);
+    // });
+    const monitorChosen = monitors.find(monitor => monitor._id === _data.message.to);
+    io.to(monitorChosen.socketId).emit('ROUTE - CHAT RECEIVE', _data);
   });
   /*
   data: { position, route_id, role, userId  }
@@ -222,6 +224,17 @@ io.on('connection', (socket) => {
   });
   socket.on('ROUTE DELETE', async (userId) => {
     deletePendingRoutesByUserId(userId);
+  });
+  socket.on('SCORE - EMITTED', async (data) => {
+    let _data = {};
+    if (typeof (data) === 'string') {
+      _data = JSON.parse(data);
+    } else {
+      _data = data;
+    }
+
+    await saveScore(_data.route_id, _data.score);
+
   });
   socket.on('disconnect', () => {
     // console.info('DISCONNECTED SOCKET...');

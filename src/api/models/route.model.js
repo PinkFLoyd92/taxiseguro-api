@@ -38,7 +38,7 @@ const routeSchema = new mongoose.Schema({
   },
   route_index: {
     type: Number,
-    default: 0
+    default: 0,
   },
   duration: {
     type: Number
@@ -47,6 +47,12 @@ const routeSchema = new mongoose.Schema({
     type: String,
   },
   waypoints: mongoose.Schema.Types.MultiPoint,
+  safeScore: {
+    type: Number,
+    default: -1,
+    min: -1,
+    max: 5,
+  },
 }, {
   timestamps: true,
 });
@@ -170,6 +176,22 @@ routeSchema.statics = {
    * @param {number} limit - Limit number of routes to be returned.
    * @returns {Promise<Route[]>}
    */
+
+  listRatedRoutes({
+    page = 1, perPage = 30,
+  }) {
+    return this.find({ status: { $in: ['finished', 'danger'] },
+                       safeScore: { $gt: -1 },
+                     })
+      .sort({ createdAt: -1 })
+      .skip(perPage * (page - 1))
+      .limit(perPage)
+      .exec((err, route) => {
+        if (err) return (err);
+        // console.info(route);
+        return route;
+      });
+  },
   listActive({
     page = 1, perPage = 30,
   }) {

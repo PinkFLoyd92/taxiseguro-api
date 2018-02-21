@@ -20,12 +20,12 @@ function callback(err, numAffected) {
 }
 
 
-exports.deletePendingRoutesByUserId = async(userId) => {
+exports.deletePendingRoutesByUserId = async (userId) => {
   await Route.remove({
     client: userId,
-    status: "pending"
+    status: 'pending',
   });
-}
+};
 exports.checkRouteStatus = async (io, monitors = [], data = {}) => {
   const conditions = { _id: data.userId };
   const update = {
@@ -184,3 +184,44 @@ const checkBuffer = async (route, data, io, monitors, clientPos) => {
     }
   }
 };
+
+exports.saveScore = async (routeId, score) => {
+  let tmpRoute = await Route.findOne({
+    _id: routeId,
+  }).exec().catch((e) => {
+    console.error('Something bad happened, ', e);
+  });
+
+  if (!tmpRoute) return false;
+  tmpRoute = { ...tmpRoute, safeScore: score };
+  await tmpRoute.save();
+  return true;
+};
+
+
+// coordinates are sent from android client
+exports.getRouteScore = async (coordinates) => {
+  const routes = await Route.listRatedRoutes();
+  const scores = [];
+  routes.forEach((route) => {
+    route.points.coordinates.forEach((point) => {
+      let endIteration = false;
+      coordinates.forEach((pointEvalRoute) => {
+        if (arePointsEqual(point, pointEvalRoute)) {
+          scores.push(route.safeScore);
+          endIteration = true;
+        }
+      });
+      if (endIteration) return;
+    });
+  });
+  if (scores.length === 0) return 0;
+  return scores.reduce(add, 0) / scores.length;
+};
+
+const arePointsEqual = (mongoPoint, androidPoint) => (mongoPoint[0] === androidPoint[0]
+          && mongoPoint[1] === androidPoint[1]);
+
+function add(a, b) {
+  return a + b;
+}

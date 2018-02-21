@@ -73,6 +73,10 @@ router
   .patch(controller.chooseDriver);
 
 router
+  .route('/isRouteSafe')
+  .post(controller.isRouteSafe);
+
+router
   .route('/active')
   .get(controller.listActive);
 
@@ -85,5 +89,8 @@ router
   .route('/checkRoute/:routeId')
   .patch(validate(checkRoute), controller.checkRoute);
 
+router
+  .route('/routeScore')
+  .post(controller.getRouteScore);
 
 module.exports = router;

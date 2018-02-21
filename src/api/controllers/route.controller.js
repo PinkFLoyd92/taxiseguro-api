@@ -10,6 +10,9 @@ const httpStatus = require('http-status');
 const Route = require('../models/route.model');
 const User = require('../models/user.model');
 const { handler: errorHandler } = require('../middlewares/error');
+const {
+  getRouteScore
+} = require('../../api/utils/GeoHandler');
 
 /**
  * Load route and append to req.
@@ -39,7 +42,7 @@ exports.get = (req, res) => {
  */
 exports.create = async (req, res, next) => {
   try {
-    let routeData = {
+    const routeData = {
       client: req.body.client,
       points: req.body.points,
       start: req.body.start,
@@ -62,11 +65,11 @@ exports.create = async (req, res, next) => {
     routeData.points = routeData.points.geometry;
     const route = new Route(routeData);
     const savedRoute = await route.save();
-    //if client request for a taxi, choose a driver
+    // if client request for a taxi, choose a driver
     if (req.body.taxiRequest && savedRoute) {
       chooseDriver(req, res, next, savedRoute);
-    } else if(savedRoute && req.body.supersededRoute) {
-      updateSupersededRoute(req, savedRoute)
+    } else if (savedRoute && req.body.supersededRoute) {
+      updateSupersededRoute(req, savedRoute);
     }
     res.status(httpStatus.CREATED);
     res.json(savedRoute.transform());
@@ -177,14 +180,13 @@ const chooseDriver = (req, res, next, route) => {
           // agregamos el conductor a la ruta.
           const newRoute = Object.assign(route, { driver: driverChosen._id, status: 'pending' });
           await newRoute.save();
-          const client = req.app.clients.filter(client => {
+          const client = req.app.clients.filter((client) => {
             if (client._id == route.client) return client;
-          })
+          });
           req.app.io.to(driverChosen.socketId).emit('ROUTE REQUEST', { user, route });
           if (client) {
             req.app.io.to(client[0].socketId).emit('DRIVER - CHOSEN', driver);
-          } else console.info("Client disconnected")
-
+          } else console.info('Client disconnected');
         } else {
           console.info('WE COULD NOT FIND ANY DRIVER AVAILABLE.');
           res.status(httpStatus.CONFLICT);
@@ -198,14 +200,14 @@ const chooseDriver = (req, res, next, route) => {
     res.json(error);
   }
 };
-//update superseded route status and send 'ROUTE CHANGE - RESULT' event
+// update superseded route status and send 'ROUTE CHANGE - RESULT' event
 const updateSupersededRoute = (req, savedRoute) => {
   Route.findById(req.body.supersededRoute, (err, route) => {
     if (err) {
-      console.error(err)
+      console.error(err);
     }
     if (route) {
-      route.status = 'superseded'; 
+      route.status = 'superseded';
       route.save();
     }
   });
@@ -215,22 +217,22 @@ const updateSupersededRoute = (req, savedRoute) => {
       req.app.io.sockets.sockets[socketId].leave(req.body.supersededRoute);
       req.app.io.sockets.sockets[socketId].join(savedRoute._id);
     });
-    Route.find({ _id: savedRoute._id})
-    .populate('client')
-    .populate('driver')
-    .exec( (err, route) => {
-      if (err) return err
-      req.app.monitors.forEach((monitor) => {
-        req.app.io.to(monitor.socketId).emit('ROUTE CHANGE - RESULT', status="ok", route[0]);
+    Route.find({ _id: savedRoute._id })
+      .populate('client')
+      .populate('driver')
+      .exec((err, route) => {
+        if (err) return err;
+        req.app.monitors.forEach((monitor) => {
+          req.app.io.to(monitor.socketId).emit('ROUTE CHANGE - RESULT', status = 'ok', route[0]);
+        });
+        const driverID = route[0].driver._id;
+        const filterDrivers = req.app.drivers.filter(driver => driver._id == driverID);
+        if (filterDrivers) {
+          req.app.io.to(filterDrivers[0].socketId).emit('ROUTE CHANGE - RESULT', status = 'ok', route[0]);
+        }
       });
-      const driverID = route[0].driver._id;
-      const filterDrivers = req.app.drivers.filter(driver => driver._id == driverID);
-      if (filterDrivers) {
-        req.app.io.to(filterDrivers[0].socketId).emit('ROUTE CHANGE - RESULT', status="ok", route[0]);
-      }
-    });  
   });
-}
+};
 exports.chooseDriver = (req, res, next) => {
   if (!req.app.drivers || req.app.drivers.length === 0) {
     res.status(httpStatus.NOT_ACCEPTABLE);
@@ -289,3 +291,67 @@ exports.chooseDriver = (req, res, next) => {
   }
 };
 
+exports.isRouteSafe = (req, res, next) => {
+  if (!req.app.drivers || req.app.drivers.length === 0) {
+    res.status(httpStatus.NOT_ACCEPTABLE);
+    res.end('error');
+  }
+  let maxDistance = 30000; // kilometers
+  let driverChosen = null;
+  // console.info(req.app.drivers);
+  const { route } = req.locals;
+  try {
+    if (route && req.app.drivers.length !== 0) {
+      const start = point([route.start.coordinates[1], route.start.coordinates[0]]);
+      async.forEach(req.app.drivers, async (driver, callback) => {
+      // check if driver is already in a route.
+        const tmpRoute = await Route.findOne({
+          driver: driver._id,
+          status: { $in: ['active', 'pending'] },
+        }).exec().catch((e) => {
+          console.error(e);
+        });
+        if (!tmpRoute) {
+          const user = await User.get(driver._id);
+          const position = point([user.location.coordinates[1], user.location.coordinates[0]]);
+          // validar si conductor ya esta en ruta
+          if (distance(start, position) < maxDistance) {
+            driverChosen = driver;
+            maxDistance = distance(start, position, { units: 'kilometers' });
+          }
+          callback();
+        }
+        callback();
+      }, async (err) => {
+        if (!driverChosen) {
+          res.status(httpStatus.CONFLICT);
+          res.end('COULD NOT FIND A DRIVER');
+        }
+        if (err) {
+          res.end(err);
+        } else if (driverChosen) {
+          const user = await User.get(route.client);
+          const newRoute = Object.assign(route, { driver: driverChosen._id });
+          await newRoute.save();
+          req.app.io.to(driverChosen.socketId).emit('ROUTE REQUEST', { user, route });
+          res.status(httpStatus.OK);
+          res.end(JSON.stringify(driverChosen));
+        } else {
+          res.status(httpStatus.NOT_FOUND);
+          res.end('Not found');
+        }
+      });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(httpStatus.BAD_REQUEST);
+    res.json(error);
+  }
+};
+
+exports.getRouteScore = async (req, res, next) => {
+  console.info(req.body);
+  const score = getRouteScore(req.body.points);
+  res.status(httpStatus.OK);
+  res.send(score);
+};
