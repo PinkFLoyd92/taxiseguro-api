@@ -45,13 +45,18 @@ exports.create = async (req, res, next) => {
       start: req.body.start,
       end: req.body.end,
       status: req.body.status,
-      route_index: req.body.route_index
+      route_index: req.body.route_index,
+      duration: req.body.duration
     };
     if (req.body.driver) {
       routeData.driver = req.body.driver;
     }
     if (req.body.supersededRoute) {
-      routeData.supersededRoute = req.body.supersededRoute
+      routeData.supersededRoute = req.body.supersededRoute;
+    }
+    if (req.body.waypoints) {
+      routeData.waypoints = multiPoint(req.body.waypoints);
+      routeData.waypoints = routeData.waypoints.geometry;
     }
     routeData.points = multiPoint(req.body.points);
     routeData.points = routeData.points.geometry;
@@ -134,7 +139,6 @@ const chooseDriver = (req, res, next, route) => {
   }
   let maxDistance = 30000; // kilometers
   let driverChosen = null;
-  // console.info(req.app.drivers);
   try {
     if (route && req.app.drivers.length !== 0) {
       // check which driver is close to this
@@ -147,7 +151,6 @@ const chooseDriver = (req, res, next, route) => {
           }).exec().catch((e) => {
             console.error('Something bad happened, ', e);
           });
-          console.info(tmpRoute);
           if (!tmpRoute) {
             const user = await User.get(driver._id);
             const position = point([user.location.coordinates[1], user.location.coordinates[0]]);

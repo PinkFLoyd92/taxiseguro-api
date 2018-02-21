@@ -40,9 +40,13 @@ const routeSchema = new mongoose.Schema({
     type: Number,
     default: 0
   },
+  duration: {
+    type: Number
+  },
   supersededRoute: {
     type: String,
   },
+  waypoints: mongoose.Schema.Types.MultiPoint,
 }, {
   timestamps: true,
 });
