@@ -186,16 +186,15 @@ const checkBuffer = async (route, data, io, monitors, clientPos) => {
 };
 
 exports.saveScore = async (routeId, score) => {
-  let tmpRoute = await Route.findOne({
-    _id: routeId,
-  }).exec().catch((e) => {
-    console.error('Something bad happened, ', e);
+  Route.findById(routeId, (err, route) => {
+    if (err) {
+      console.error('Something bad happened, ', e);
+    }
+    if (route) {
+      route.safeScore = score;
+      route.save();
+    }
   });
-
-  if (!tmpRoute) return false;
-  tmpRoute = { ...tmpRoute, safeScore: score };
-  await tmpRoute.save();
-  return true;
 };
 
 

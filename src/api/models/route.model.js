@@ -177,15 +177,11 @@ routeSchema.statics = {
    * @returns {Promise<Route[]>}
    */
 
-  listRatedRoutes({
-    page = 1, perPage = 30,
-  }) {
+  listRatedRoutes() {
     return this.find({ status: { $in: ['finished', 'danger'] },
                        safeScore: { $gt: -1 },
                      })
       .sort({ createdAt: -1 })
-      .skip(perPage * (page - 1))
-      .limit(perPage)
       .exec((err, route) => {
         if (err) return (err);
         // console.info(route);

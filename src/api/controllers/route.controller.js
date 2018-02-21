@@ -351,7 +351,7 @@ exports.isRouteSafe = (req, res, next) => {
 
 exports.getRouteScore = async (req, res, next) => {
   console.info(req.body);
-  const score = getRouteScore(req.body.points);
+  const score = await getRouteScore(req.body.points);
   res.status(httpStatus.OK);
-  res.send(score);
+  res.json({score: score});
 };
