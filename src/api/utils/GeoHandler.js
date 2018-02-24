@@ -200,26 +200,33 @@ exports.saveScore = async (routeId, score) => {
 
 // coordinates are sent from android client
 exports.getRouteScore = async (coordinates) => {
+  let totalScore = 0;
   const routes = await Route.listRatedRoutes();
   const scores = [];
   routes.forEach((route) => {
-    route.points.coordinates.forEach((point) => {
-      let endIteration = false;
-      coordinates.forEach((pointEvalRoute) => {
-        if (arePointsEqual(point, pointEvalRoute)) {
-          scores.push(route.safeScore);
-          endIteration = true;
-        }
-      });
-      if (endIteration) return;
+    let counterEqualPoints = 0;
+    const linestring1 = lineString(route.points.coordinates);
+    const buffered = buffer(linestring1, 0.5, { units: 'kilometers' });
+    coordinates.forEach((pointEvalRoute) => {
+      const _point = point(pointEvalRoute);
+      const isInBuffer = isPointInPolygon(_point, buffered.geometry);
+      if (isInBuffer) {
+        counterEqualPoints += 1;
+      }
+
+      if (counterEqualPoints >= route.points.coordinates.length / 2) {
+        scores.push(route.safeScore);
+      }
     });
   });
-  if (scores.length === 0) return 0;
-  return scores.reduce(add, 0) / scores.length;
+  if (scores.length === 0) { totalScore = -1; } else {
+    totalScore = scores.reduce(add, 0) / scores.length;
+  }
+  return Math.ceil(totalScore); // returning the upward integer
 };
 
-const arePointsEqual = (mongoPoint, androidPoint) => (mongoPoint[0] === androidPoint[0]
-          && mongoPoint[1] === androidPoint[1]);
+const arePointsEqual = (mongoPoint, androidPoint) => (mongoPoint[1] === androidPoint[1]
+          && mongoPoint[0] === androidPoint[0]);
 
 function add(a, b) {
   return a + b;

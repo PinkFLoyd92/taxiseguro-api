@@ -120,7 +120,7 @@ exports.checkRoute = (req, res, next) => {
   const { route } = req.locals;
   const linestring1 = lineString(route.points.coordinates);
   const _point = point(req.body.position);
-  const buffered = buffer(linestring1, 10, { units: 'kilometers' });
+  const buffered = buffer(linestring1, 0.5, { units: 'kilometers' });
   const isInBuffer = isPointInPolygon(_point, buffered.geometry);
   // emiting alert...
   if (isInBuffer) {
@@ -240,7 +240,6 @@ exports.chooseDriver = (req, res, next) => {
   }
   let maxDistance = 30000; // kilometers
   let driverChosen = null;
-  // console.info(req.app.drivers);
   const { route } = req.locals;
   try {
     if (route && req.app.drivers.length !== 0) {
@@ -298,7 +297,6 @@ exports.isRouteSafe = (req, res, next) => {
   }
   let maxDistance = 30000; // kilometers
   let driverChosen = null;
-  // console.info(req.app.drivers);
   const { route } = req.locals;
   try {
     if (route && req.app.drivers.length !== 0) {
@@ -350,7 +348,6 @@ exports.isRouteSafe = (req, res, next) => {
 };
 
 exports.getRouteScore = async (req, res, next) => {
-  console.info(req.body);
   const score = await getRouteScore(req.body.points);
   res.status(httpStatus.OK);
   res.json({score: score});
